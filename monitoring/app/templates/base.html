@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мониторинг</title>
+
+    <!-- Bootstrap CSS (пример с CDN) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <!-- FontAwesome CSS (пример с CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Подключение Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+
+    <!-- Подключение Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .saturate { filter: saturate(3); }
+        .grayscale { filter: grayscale(100%); }
+        .contrast { filter: contrast(160%); }
+        .brightness { filter: brightness(1); }
+        .blur { filter: blur(3px); }
+        .invert { filter: invert(100%); }
+        .sepia { filter: sepia(300%); }
+        .huerotate { filter: hue-rotate(180deg); }
+        .rss.opacity { filter: opacity(50%); }
+        .nav-link.active {
+            background-color: #c93853 !important; /* цвет фона таба */
+          }
+    </style>
+
+</head>
+<body>
+    <!-- Шапка навигации-->
+    <div class="header_shapka">
+        <div class="header_zaliv">
+            <div class="container">
+                 <div class="row">
+                    <div class="col-md-2">
+                        <a class="navbar-brand sepia" href="/">
+                            <img src="{% static 'img/logo.png' %}" alt="Logo" class="sepia">
+                        </a>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="container">
+                            <div class="text-left">
+                                <br><br>
+                                <h2 class="text_header">Название программы</h2>
+                                <h4 class="text_header">Краткое описание</h4>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-3"></div>
+                     <div class="col-md-2">
+                         <div class="container">
+                            <div class="text-right">
+                                <br><br><br>
+                                <h6 class="text_header">Инфо</h6>
+                                <h6 class="text_header">Телефон</h6>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <ul class="nav nav-tabs" id="myTabs">
+        <li class="nav-item" style="margin-left: 150px;">
+          <a class="nav-link" aria-current="page" href="/">Главная</a>
+        </li>
+        <li class="nav-item mx-5">
+          <a class="nav-link" href="/control/">Контроль</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown mx-3">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Обучающему</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/add_results/">Внесение результатов</a></li>
+            <li><a class="dropdown-item" href="/editing/">Изменение данных</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Что-то еще</a></li>
+          </ul>
+        </li>
+        {% endif %}
+        <li class="nav-item mx-3">
+          <a class="nav-link" href="/author/">Об авторе</a>
+        </li>
+        <li class="nav-item ml-auto">
+          <a class="nav-link" href="/login/">
+              {% if user.is_authenticated %}
+                {{ user.username }}
+              {% else %}
+                Вход
+              {% endif %}
+          </a>
+        </li>
+      </ul>
+    <main>
+            <!-- Основное содержимое страницы будет вставляться сюда из дочерних шаблонов -->
+            {% block content %}{% endblock %}
+    </main>
+    <footer></footer>
+
+
+    <!-- Bootstrap JS (пример с CDN) -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Дополнительные скрипты, если необходимо -->
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var currentUrl = window.location.pathname;
+            var navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(function (link) {
+                if (link.getAttribute('href') === currentUrl) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

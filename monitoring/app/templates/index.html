@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Index Page{% endblock %}
+
+{% block content %}
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <h2>Welcome to the Index Page</h2>
+{% endif %}
+{% endblock %}

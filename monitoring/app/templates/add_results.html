@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Внести результаты{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <form method="post">
+                {% csrf_token %}
+                {{ category_form.as_p }}
+                {{ exercise_form.as_p }}
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var nameSelect = document.getElementById('id_category');
+    var exerciseSelect = document.getElementById('id_exercise');
+
+    if (nameSelect && exerciseSelect) {
+      nameSelect.addEventListener('change', function() {
+        var categoryId = this.value;
+
+        exerciseSelect.innerHTML = '';
+
+        if (categoryId) {
+          fetch(`/get_exercises_for_category/${categoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+              data.exercises.forEach(exercise => {
+                var option = document.createElement('option');
+                option.value = exercise.id;
+                option.text = exercise.name;
+                exerciseSelect.appendChild(option);
+              });
+            });
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
