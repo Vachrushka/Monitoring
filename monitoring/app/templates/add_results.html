@@ -5,42 +5,237 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-6 offset-md-3">
+        <!-- Первая колонка -->
+        <div class="col-md-4">
+            <h3>Выберите дисциплину</h3>
             <form method="post">
                 {% csrf_token %}
-                {{ category_form.as_p }}
-                {{ exercise_form.as_p }}
-                <button type="submit" class="btn btn-primary">Submit</button>
+
+                <div class="mb-3">
+                    {{ category_form.category }}
+                </div>
+
+                <div class="mb-3">
+                    {{ exercise_form.exercise }}
+                </div>
             </form>
+        </div>
+
+        <!-- Вторая колонка -->
+        <div class="col-md-4">
+            <!-- Ваш шаблон для второй колонки -->
+            <h3>Выберите группу</h3>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ departament_form.departament }}
+                </div>
+            </form>
+            <!-- Ваши формы, текст и т.д. для второй колонки -->
+        </div>
+
+        <!-- Третья колонка -->
+        <div class="col-md-4">
+            <!-- Ваш шаблон для третьей колонки -->
+            <h3>Норматив для текущей группы</h3>
+            <!-- Блок для отображения value -->
+            <div>
+                <p id="value-container">Значение: </p>
+            </div>
+
+            <!-- Блок для отображения description -->
+            <div>
+                <p id="description-container">Описание: </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Первая колонка -->
+        <div class="col-md-4">
+            <h2>Table Form Example</h2>
+
+            <table id="cadetsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Patronymic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Cadet data will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Вторая колонка -->
+        <div class="col-md-4">
+            <form method="post">
+                {% csrf_token %}
+                {{ absence_form.as_p }}
+
+                <!-- Таблица с курсантами и полями для ввода результатов -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Курсант</th>
+                            <th>Результат</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cadet_form in cadet_forms %}
+                            <tr>
+                                <td>{{ cadet_form.name.value }}</td>
+                                <td>{{ cadet_form.result }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <button type="submit">Submit</button>
+            </form>
+
+
+        </div>
+
+        <!-- Третья колонка -->
+        <div class="col-md-4">
+            <!-- Ваш шаблон для третьей колонки -->
+<!--            <h3>Норматив для текущей группы</h3>-->
+            <!-- Блок для отображения value -->
+
         </div>
     </div>
 </div>
-
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var nameSelect = document.getElementById('id_category');
-    var exerciseSelect = document.getElementById('id_exercise');
+    function updateCadetTable(departamentId){
+        var url = `/get_cadets_from_dep/${departamentId}/`;
+        fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Добавление данных в таблицу
+                    const cadetsTableBody = document.getElementById('cadetsTable').getElementsByTagName('tbody')[0];
+                    cadetsTableBody.innerHTML = '';
+                    data.exercises.forEach(cadet => {
+                        const row = cadetsTableBody.insertRow();
+                        const cell1 = row.insertCell(0);
+                        const cell2 = row.insertCell(1);
+                        const cell3 = row.insertCell(2);
+                        const cell4 = row.insertCell(3);
 
-    if (nameSelect && exerciseSelect) {
-      nameSelect.addEventListener('change', function() {
-        var categoryId = this.value;
+                        cell1.textContent = cadet.id;
+                        cell2.textContent = cadet.name;
+                        cell3.textContent = cadet.surname;
+                        cell4.textContent = cadet.patronymic;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching cadets:', error);
+                });
+    }
 
+    function updateValueBasedOnSelectedOption(formField, exerciseId, departamentId) {
+        if (exerciseId === "" || departamentId === ""){
+            return
+        }
+        // Сохранение текущего значения
+        var currentValue = formField.value;
+        var url = `/get_exercise_standard/${exerciseId}/${departamentId}/`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Обновление значений формы
+                formField.value = data.value;
+
+                // Восстановление предыдущего значения, если оно было сохранено
+                if (currentValue) {
+                    formField.value = currentValue;
+                }
+
+                var descriptionField = document.getElementById('description-container');
+                if (descriptionField && 'description' in data && data.description !== null) {
+                    descriptionField.textContent = 'Описание: ' + data.description;
+                } else {
+                    descriptionField.textContent = 'Описание отсутствует';
+                }
+
+                var valueField = document.getElementById('value-container');
+                if (valueField && 'value' in data && data.value !== null) {
+                    valueField.textContent = 'Норматив: ' + data.value;
+                } else {
+                    valueField.textContent = 'Норматив отсутствует';
+                }
+
+            })
+            .catch(error => {
+                console.error('Error fetching ExerciseStandard:', error);
+            });
+    }
+    function updateExerciseOptions(categoryId) {
+        var exerciseSelect = document.getElementById('id_exercise');
         exerciseSelect.innerHTML = '';
 
         if (categoryId) {
-          fetch(`/get_exercises_for_category/${categoryId}/`)
-            .then(response => response.json())
-            .then(data => {
-              data.exercises.forEach(exercise => {
-                var option = document.createElement('option');
-                option.value = exercise.id;
-                option.text = exercise.name;
-                exerciseSelect.appendChild(option);
-              });
-            });
+            fetch(`/get_exercises_for_category/${categoryId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    data.exercises.forEach(exercise => {
+                        var option = document.createElement('option');
+                        option.value = exercise.id;
+                        option.text = exercise.name;
+                        exerciseSelect.appendChild(option);
+                    });
+                });
         }
-      });
     }
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+    var nameSelect = document.getElementById('id_category');
+    var exerciseForm = document.getElementById('id_exercise');
+    var departamentForm = document.getElementById('id_departament');
+
+    if (nameSelect && exerciseForm) {
+        // Инициализация при загрузке страницы
+        updateExerciseOptions(nameSelect.value);
+
+        // Обработчики событий
+        nameSelect.addEventListener('change', function() {
+            updateExerciseOptions(this.value);
+        });
+
+        exerciseForm.addEventListener('DOMNodeInserted', function(event) {
+        // Проверка, что добавлен узел option
+        if (event.target.tagName === 'OPTION') {
+            // Получение выбранного значения для departamentForm
+            var departamentId = departamentForm.value;
+            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentId);
+        }
+});
+    }
+    if (exerciseForm && departamentForm) {
+        // Инициализация при загрузке страницы
+        var exerciseId = exerciseForm.value;
+        var departamentId = departamentForm.value;
+        updateValueBasedOnSelectedOption(exerciseForm, exerciseId, departamentId);
+
+        // Добавление обработчиков событий для изменения значений на основе выбора
+        exerciseForm.addEventListener('change', function() {
+            // Получение выбранного значения для departamentForm
+            var departamentId = departamentForm.value;
+            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentId);
+        });
+
+        departamentForm.addEventListener('change', function() {
+            // Получение выбранного значения для exerciseForm
+            var exerciseId = exerciseForm.value;
+            updateValueBasedOnSelectedOption(departamentForm, exerciseId, departamentForm.value);
+            updateCadetTable(departamentForm.value);
+        });
+    }
+});
 </script>
+
+
 {% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Exercise
+from .models import Category, Exercise, Departament, AbsenceReason, Cadet
 
 
 class SetCategoryForm(forms.ModelForm):
@@ -22,3 +22,28 @@ class SetExerciseForm(forms.ModelForm):
     class Meta:
         model = Exercise
         fields = ['exercise']
+
+class SetDepartamentForm(forms.ModelForm):
+    departament = forms.ModelChoiceField(
+        queryset=Departament.objects.all(),
+        required=True,
+        empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Направление"
+    )
+    class Meta:
+        model = Departament
+        fields = ['departament']
+
+
+class AbsenceForm(forms.ModelForm):
+    class Meta:
+        model = AbsenceReason
+        fields = ['name']
+
+class SetCadetResultForm(forms.ModelForm):
+    class Meta:
+        model = Cadet
+        fields = ['name']  # Добавьте другие поля, если необходимо
+
+    result = forms.FloatField()

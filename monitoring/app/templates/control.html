@@ -3,6 +3,56 @@
 {% block title %}Control Page{% endblock %}
 
 {% block content %}
-    <h2>Welcome to the Control Page</h2>
-    <!-- Остальное содержимое страницы -->
+<div class="container mt-5">
+    <h2 class="mb-4">Welcome to the Control Page</h2>
+
+    <!-- Filters -->
+    <form class="form-inline mb-4">
+        <label class="mr-2">Имя:</label>
+        <input type="text" class="form-control mr-2">
+
+        <label class="mr-2">Дисциплина:</label>
+        <select class="form-control mr-2">
+            <option value="">Все</option>
+            <option value="football">Сила</option>
+            <option value="basketball">Ловкость</option>
+            <option value="tennis">Выносливость</option>
+        </select>
+
+        <label class="mr-2">Результат:</label>
+        <input type="text" class="form-control mr-2">
+
+        <label class="mr-2">Время:</label>
+        <div class="input-group mr-2">
+            <input type="date" class="form-control">
+            <span class="input-group-text">по</span>
+            <input type="date" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+    </form>
+
+    <h5 class="mb-4">ФИО - дисциплина</h5>
+
+    <!-- Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Рейтинг</th>
+                <th>Дата</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>12</td>
+                <td>25.12</td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>26:12</td>
+            </tr>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+</div>
 {% endblock %}

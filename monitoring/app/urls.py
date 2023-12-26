@@ -1,5 +1,6 @@
 from django.urls import path, include
-from .views import index, login_view, control, author, test_page, add_results, editing, get_exercises_for_category
+from .views import index, login_view, control, author, test_page, add_results, editing, \
+    get_exercises_for_category, get_exercise_standard, get_cadets_from_dep
 from django.contrib.auth import views as auth_views
 
 app_name = 'app'
@@ -13,6 +14,10 @@ urlpatterns = [
     path('test_page/', test_page, name='test_page'),
     path('editing/', editing, name='editing'),
     path('add_results/', add_results, name='add_results'),
-    path('get_exercises_for_category/<int:category_id>/', get_exercises_for_category, name='get_exercises_for_category'),
-
+    path('get_exercises_for_category/<int:category_id>/',
+         get_exercises_for_category, name='get_exercises_for_category'),
+    path('get_exercise_standard/<int:exercise_id>/<int:departament_id>/',
+         get_exercise_standard, name='get_exercise_standard'),
+    path("get_cadets_from_dep/<int:departament_id>/",
+         get_cadets_from_dep, name='get_cadets_from_dep')
 ]
