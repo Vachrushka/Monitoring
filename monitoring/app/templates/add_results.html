@@ -3,6 +3,8 @@
 {% block title %}Внести результаты{% endblock %}
 
 {% block content %}
+
+<div id="message-container"></div>
 <div class="container mt-5">
     <div class="row">
         <!-- Первая колонка -->
@@ -32,13 +34,20 @@
                     {{ departament_form.departament }}
                 </div>
             </form>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ uniforms_form.uniforms }}
+                </div>
+            </form>
             <!-- Ваши формы, текст и т.д. для второй колонки -->
         </div>
 
         <!-- Третья колонка -->
         <div class="col-md-4">
             <!-- Ваш шаблон для третьей колонки -->
-            <h3>Норматив для текущей группы</h3>
+            <h3>Норматив по дисциплине</h3>
             <!-- Блок для отображения value -->
             <div>
                 <p id="value-container">Значение: </p>
@@ -50,99 +59,101 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <!-- Первая колонка -->
-        <div class="col-md-4">
-            <h2>Table Form Example</h2>
+    <div class="row mt-4">
+        <div class="col-md-12">
 
-            <table id="cadetsTable">
+            <table class="table" id="cadetsTable1">
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Surname</th>
-                        <th>Patronymic</th>
-                    </tr>
+                    <tr><th>ФИО</th><th>Новый результат</th><th>Причина отсутствия</th><th>Дата</th></tr>
                 </thead>
-                <tbody>
-                    <!-- Cadet data will be inserted here dynamically -->
+                <tbody id="cadetsTableBody">
+<!--                    {% for ex in exercise %}-->
+<!--                        <tr>-->
+<!--                            <td id="fullName"></td>-->
+<!--                            <td><input type="text" name="newResult" oninput="validateFloatInput(this)" /></td>-->
+<!--                            <td class="absence-form-container"></td>-->
+<!--                            <td><input type="date" name="currentDate" value="{% now 'Y-%m-%d' %}" /></td>-->
+<!--                        </tr>-->
+<!--                    {% endfor %}-->
                 </tbody>
             </table>
         </div>
-
-        <!-- Вторая колонка -->
-        <div class="col-md-4">
-            <form method="post">
-                {% csrf_token %}
-                {{ absence_form.as_p }}
-
-                <!-- Таблица с курсантами и полями для ввода результатов -->
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Курсант</th>
-                            <th>Результат</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cadet_form in cadet_forms %}
-                            <tr>
-                                <td>{{ cadet_form.name.value }}</td>
-                                <td>{{ cadet_form.result }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <button type="submit">Submit</button>
-            </form>
-
-
-        </div>
-
-        <!-- Третья колонка -->
-        <div class="col-md-4">
-            <!-- Ваш шаблон для третьей колонки -->
-<!--            <h3>Норматив для текущей группы</h3>-->
-            <!-- Блок для отображения value -->
-
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-3 mx-auto">
+            <button type="submit" class="btn btn-primary btn-block" id="submit-button">Записать результаты</button>
         </div>
     </div>
 </div>
 <script>
-    function updateCadetTable(departamentId){
+    function updateCadetTableBody(cadetsTableBody, departamentId){
         var url = `/get_cadets_from_dep/${departamentId}/`;
         fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // Добавление данных в таблицу
-                    const cadetsTableBody = document.getElementById('cadetsTable').getElementsByTagName('tbody')[0];
+                    // Clear existing rows in the table body
                     cadetsTableBody.innerHTML = '';
-                    data.exercises.forEach(cadet => {
-                        const row = cadetsTableBody.insertRow();
-                        const cell1 = row.insertCell(0);
-                        const cell2 = row.insertCell(1);
-                        const cell3 = row.insertCell(2);
-                        const cell4 = row.insertCell(3);
 
-                        cell1.textContent = cadet.id;
-                        cell2.textContent = cadet.name;
-                        cell3.textContent = cadet.surname;
-                        cell4.textContent = cadet.patronymic;
-                    });
+                    // Add new rows based on the fetched data
+                    data.exercises.forEach((cadet, index) => {
+                    var row = cadetsTableBody.insertRow();
+                    var fullNameCell = row.insertCell(0);
+                    var newResultCell = row.insertCell(1);
+                    var absenceFormCell = row.insertCell(2);
+                    var dateCell = row.insertCell(3);
+
+                    var fullName = `${cadet.name} ${cadet.surname} ${cadet.patronymic}`;
+                    fullNameCell.textContent = fullName;
+
+                    // Add an input for the new result in each row
+                    newResultCell.innerHTML = '<div class="mt-1"><input type="text" name="newResult" /></div>';
+
+                    // Insert the form in every row of the third column
+                    var form = document.createElement('form');
+                    form.method = 'post';
+                    form.innerHTML = `{% csrf_token %}<div class="mb-3">{{ absence_form.absence }}</div>`;
+                    absenceFormCell.appendChild(form);
+
+                    dateCell.innerHTML = `<div class="mt-1"><input type="date" name="currentDate" value="${new Date().toISOString().split('T')[0]}" /></div>`;
+                });
                 })
                 .catch(error => {
-                    console.error('Error fetching cadets:', error);
+                    console.error('Error fetching cadet data:', error);
                 });
     }
 
-    function updateValueBasedOnSelectedOption(formField, exerciseId, departamentId) {
+    function showMessage(type, text) {
+        var messageContainer = document.getElementById('message-container');
+
+        // Создание нового элемента сообщения
+        var messageElement = document.createElement('div');
+        messageElement.classList.add('alert');
+
+        if (type === 'success') {
+            messageElement.classList.add('alert-success');
+        } else if (type === 'error') {
+            messageElement.classList.add('alert-danger');
+        }
+
+        // Установка текста сообщения
+        messageElement.textContent = text;
+
+        // Добавление элемента к контейнеру сообщений
+        messageContainer.appendChild(messageElement);
+
+        // Задержка перед удалением сообщения (например, 5 секунд)
+        setTimeout(function () {
+            messageElement.remove();
+        }, 5000);
+    }
+
+    function updateValueBasedOnSelectedOption(formField, exerciseId, departamentId, uniformId) {
         if (exerciseId === "" || departamentId === ""){
             return
         }
         // Сохранение текущего значения
         var currentValue = formField.value;
-        var url = `/get_exercise_standard/${exerciseId}/${departamentId}/`;
+        var url = `/get_exercise_standard/${exerciseId}/${departamentId}/${uniformId}/`;
 
         fetch(url)
             .then(response => response.json())
@@ -191,10 +202,51 @@
                 });
         }
     }
+    function sendDataToServer(excersiseId, uniformId, departamentId) {
+            const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+            // Собираем данные из таблицы
+            var dataToSend = [];
+            document.querySelectorAll("#cadetsTableBody tr").forEach(function (row) {
+                var rowData = {
+                    result: row.querySelector("input[name='newResult']").value,
+                    absenceId: row.querySelector("select[name='absence']").value,
+                    date: row.querySelector("input[name='currentDate']").value
+                };
+                dataToSend.push(rowData);
+            });
+
+            // Отправляем данные на сервер с использованием fetch
+            fetch('/save_grading_data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({'exerciseId': excersiseId, 'uniformId':uniformId, 'departamentId': departamentId, 'results': dataToSend})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showMessage('success', 'Сохранение прошло успешно!')
+                console.log(data);
+            })
+            .catch(error => {
+                showMessage('error', 'Произошла ошибка при сохранении.')
+                console.error('Error sending data to the server', error);
+            });
+        }
+
     document.addEventListener('DOMContentLoaded', function() {
     var nameSelect = document.getElementById('id_category');
     var exerciseForm = document.getElementById('id_exercise');
     var departamentForm = document.getElementById('id_departament');
+    var uniformsForm = document.getElementById('id_uniforms');
+    var cadetsTableBody = document.getElementById('cadetsTableBody');
+    var subbut = document.getElementById('submit-button');
 
     if (nameSelect && exerciseForm) {
         // Инициализация при загрузке страницы
@@ -205,33 +257,48 @@
             updateExerciseOptions(this.value);
         });
 
-        exerciseForm.addEventListener('DOMNodeInserted', function(event) {
-        // Проверка, что добавлен узел option
-        if (event.target.tagName === 'OPTION') {
-            // Получение выбранного значения для departamentForm
-            var departamentId = departamentForm.value;
-            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentId);
-        }
+        var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            // Проверка, что добавлен узел option
+            if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].tagName === 'OPTION') {
+                // Получение выбранного значения для departamentForm
+                var departamentId = departamentForm.value;
+                updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentId, uniformsForm.value);
+            }
+        });
 });
+
+// Начать отслеживание изменений в exerciseForm
+observer.observe(exerciseForm, { childList: true });
     }
     if (exerciseForm && departamentForm) {
         // Инициализация при загрузке страницы
         var exerciseId = exerciseForm.value;
         var departamentId = departamentForm.value;
-        updateValueBasedOnSelectedOption(exerciseForm, exerciseId, departamentId);
+        var uniformId = uniformsForm.value;
+        updateValueBasedOnSelectedOption(exerciseForm, exerciseId, departamentId, uniformId);
+        updateCadetTableBody(cadetsTableBody, departamentId);
 
         // Добавление обработчиков событий для изменения значений на основе выбора
         exerciseForm.addEventListener('change', function() {
             // Получение выбранного значения для departamentForm
-            var departamentId = departamentForm.value;
-            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentId);
+            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentForm.value, uniformsForm.value);
+        });
+
+        uniformsForm.addEventListener('change', function() {
+            // Получение выбранного значения для departamentForm
+            updateValueBasedOnSelectedOption(exerciseForm, exerciseForm.value, departamentForm.value, uniformsForm.value);
         });
 
         departamentForm.addEventListener('change', function() {
             // Получение выбранного значения для exerciseForm
-            var exerciseId = exerciseForm.value;
-            updateValueBasedOnSelectedOption(departamentForm, exerciseId, departamentForm.value);
-            updateCadetTable(departamentForm.value);
+            updateValueBasedOnSelectedOption(departamentForm, exerciseForm.value, departamentForm.value, uniformsForm.value);
+            updateCadetTableBody(cadetsTableBody, departamentForm.value);
+        });
+
+        // Обработчик события для кнопки
+        document.getElementById('submit-button').addEventListener('click', function () {
+            sendDataToServer(exerciseForm.value, uniformsForm.value, departamentForm.value);
         });
     }
 });

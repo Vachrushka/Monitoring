@@ -84,11 +84,16 @@ class Exercise(models.Model):
     def __str__(self):
         return f"{self.category.name} - {self.name}"
 
+class Uniforms(models.Model):
+    name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return f"{self.name}"
 
 class ExerciseStandard(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
+    uniform_type = models.ForeignKey(Uniforms, on_delete=models.PROTECT)
     description = models.CharField(max_length=255, blank=True, null=True)
     value = models.FloatField()
 
@@ -103,16 +108,19 @@ class AbsenceReason(models.Model):
         return f"{self.name}"
 
 
+
+
 class Grading(models.Model):
     student = models.ForeignKey(Cadet, on_delete=models.PROTECT)
     exercise = models.ForeignKey(Exercise, on_delete=models.PROTECT)
+    uniform_type = models.ForeignKey(Uniforms, on_delete=models.PROTECT)
     absence_reason = models.ForeignKey(AbsenceReason, on_delete=models.SET_NULL, null=True, blank=True)
     result = models.FloatField(blank=True, null=True)
-    datetime = models.DateTimeField(default=timezone.now)
+    datetime = models.DateTimeField(auto_now_add=False)
 
     def __str__(self):
-        return f"{self.student.name} - {self.exercise.name} - " \
-               f"{self.result if self.result is not None else self.absence_reason.name} - {self.datetime}"
+        return f"{self.student} - {self.exercise} - {self.uniform_type} - " \
+               f"{self.result if self.result is not None else self.absence_reason} - {self.datetime}"
 
 # prepod
 
