@@ -4,9 +4,10 @@ from .models import Category, Exercise, Departament, AbsenceReason, Cadet, Unifo
 
 class SetCategoryForm(forms.ModelForm):
     category = forms.ModelChoiceField(queryset=Category.objects.all(),
-                                  empty_label=None,
-                                  widget=forms.Select(attrs={'class': 'form-control'}),
-                                  label="Категория")
+                                      empty_label=None,
+                                      widget=forms.Select(attrs={'class': 'form-control'}),
+                                      label="Категория")
+
     class Meta:
         model = Category
         fields = ['category']
@@ -19,9 +20,11 @@ class SetExerciseForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label="Упражнение"
     )
+
     class Meta:
         model = Exercise
         fields = ['exercise']
+
 
 class SetDepartamentForm(forms.ModelForm):
     departament = forms.ModelChoiceField(
@@ -31,6 +34,7 @@ class SetDepartamentForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label="Направление"
     )
+
     class Meta:
         model = Departament
         fields = ['departament']
@@ -48,12 +52,14 @@ class SetAbsenceForm(forms.ModelForm):
         model = AbsenceReason
         fields = ['absence']
 
+
 class SetCadetResultForm(forms.ModelForm):
     class Meta:
         model = Cadet
         fields = ['name']
 
     result = forms.FloatField()
+
 
 class SetUniformForm(forms.ModelForm):
     uniforms = forms.ModelChoiceField(
@@ -66,3 +72,38 @@ class SetUniformForm(forms.ModelForm):
     class Meta:
         model = Uniforms
         fields = ['uniforms']
+
+
+class EditDepartamentForm(forms.ModelForm):
+    class Meta:
+        model = Departament
+        fields = '__all__'
+        labels = {
+            "name": "Название",
+            "platoon": "Взвод",
+            "course": "Курс"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+class EditCadetForm(forms.ModelForm):
+    class Meta:
+        model = Cadet
+        fields = '__all__'
+        labels = {
+            "name": "Имя",
+            "surname": "Фамилия",
+            "patronymic": "Отчество",
+            "rank": "Звание",
+            "departament": "Отделение",
+            "course": "Курс"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'

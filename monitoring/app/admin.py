@@ -1,12 +1,12 @@
 from django.contrib import admin
 from .models import Faculty, Company, Platoon, Departament
 from .models import Course, Rank, Cadet
-from .models import Category, Exercise, ExerciseStandard, AbsenceReason, Grading, Uniforms
+from .models import Category, Exercise, ExerciseStandard, AbsenceReason, Grading, Uniforms, CadetProfile
 
 
 # Получение всех моделей из текущего приложения
 app_models = [Faculty, Company, Platoon, Category, Exercise,
-              ExerciseStandard, AbsenceReason, Grading, Uniforms]
+              ExerciseStandard, AbsenceReason, Grading, Uniforms, CadetProfile]
 
 # Регистрация каждой модели в административной панели
 for model in app_models:

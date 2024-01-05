@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbsenceForm, SetCadetResultForm, SetUniformForm
+from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbsenceForm, SetCadetResultForm, \
+    SetUniformForm, EditDepartamentForm, EditCadetForm
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading
@@ -64,8 +65,8 @@ def test_page(request):
     return render(request, 'test_page.html', context)
 
 @login_required
-def editing(request):
-    return render(request, 'editing.html')
+def edit_users(request):
+    return render(request, 'edit_users.html')
 
 
 @login_required
@@ -76,16 +77,6 @@ def add_results(request):
     set_result_form = SetCadetResultForm()
     absence_form = SetAbsenceForm()
     uniforms_form = SetUniformForm()
-
-    if request.method == 'POST':
-        category_form = SetCategoryForm(request.POST)
-        exercise_form = SetExerciseForm(request.POST)
-
-        if category_form.is_valid() and exercise_form.is_valid():
-            # Делайте что-то с выбранными данными
-            category_name = category_form.cleaned_data['name']
-            exercise_name = exercise_form.cleaned_data['name']
-            # ...
 
     return render(request, 'add_results.html',
                   {'category_form': category_form,
@@ -157,8 +148,8 @@ def save_grading_data(request):
                 student_id=cadets[ind]['id'],
                 exercise_id=exercise_id,
                 uniform_type_id=uniform_type_id,
-                absence_reason_id=item['absenceId'] if item['absenceId'] is not '' else None,
-                result=int(item['result']) if item['result'] is not '' else None,
+                absence_reason_id=item['absenceId'] if item['absenceId'] != '' else None,
+                result=int(item['result']) if item['result'] != '' else None,
                 datetime=pytz.timezone('UTC').localize(datetime.strptime(
                     f"{item['date']} {datetime.now().time().strftime('%H:%M:%S')}", "%Y-%m-%d %H:%M:%S"))
             )
@@ -167,3 +158,109 @@ def save_grading_data(request):
     except Exception as e:
         messages.error(request, 'Произошла ошибка при сохранинии.')
         return JsonResponse({'success': False, 'error': str(e)})
+
+
+# edit gr page
+@login_required
+def edit_groups(request):
+    success = False
+    if request.method == 'POST':
+        form = EditDepartamentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            success = True
+
+    context = {
+        'departaments': Departament.objects.all().order_by('-id'),
+        'form': EditDepartamentForm(),
+        'success': success
+    }
+    return render(request, 'edit_groups.html', context)
+
+
+@login_required
+def update_group(request, pk):
+    success_update = False
+    get_group = get_object_or_404(Departament, pk=pk)
+    #get_group = Departament.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = EditDepartamentForm(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+
+    context = {
+        'get_group': get_group,
+        'update': True,
+        'form': EditDepartamentForm(instance=get_group),
+        'success_update': success_update
+    }
+
+    return render(request, 'edit_groups.html', context)
+
+
+
+@login_required
+def delete_group(request, pk):
+    get_article = get_object_or_404(Departament, pk=pk)
+    get_article.delete()
+
+    return redirect('app:edit_groups')
+
+
+# edit user page
+@login_required
+def edit_users(request):
+    success = False
+    search_term = request.GET.get('search', '')
+    if request.method == 'POST':
+        form = EditCadetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            success = True
+
+    cadets = Cadet.objects.all().order_by('-id')
+    if search_term:
+        cadets = cadets.filter(name__icontains=search_term) | \
+                 cadets.filter(surname__icontains=search_term) | \
+                 cadets.filter(rank__name__icontains=search_term) | \
+                 cadets.filter(departament__name__icontains=search_term) | \
+                 cadets.filter(course__name__icontains=search_term) | \
+                 cadets.filter(patronymic__icontains=search_term)
+
+    context = {
+        'departaments': cadets,
+        'form': EditCadetForm(),
+        'success': success
+    }
+    return render(request, 'edit_users.html', context)
+
+
+@login_required
+def update_user(request, pk):
+    success_update = False
+    get_group = get_object_or_404(Cadet, pk=pk)
+    #get_group = Departament.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = EditCadetForm(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+
+    context = {
+        'get_group': get_group,
+        'update': True,
+        'form': EditCadetForm(instance=get_group),
+        'success_update': success_update
+    }
+
+    return render(request, 'edit_users.html', context)
+
+
+@login_required
+def delete_user(request, pk):
+    get_article = get_object_or_404(Cadet, pk=pk)
+    get_article.delete()
+
+    return redirect('app:edit_users')
+

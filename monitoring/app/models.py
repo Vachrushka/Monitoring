@@ -41,6 +41,9 @@ class Departament(models.Model):
     def __str__(self):
         return f'{self.platoon} - {self.name} - {self.course}'
 
+    class Meta:
+        unique_together = ('name', 'platoon', 'course')
+
 
 # cadet
 
@@ -66,6 +69,14 @@ class Cadet(models.Model):
 
     def __str__(self):
         return f'{self.surname} {self.name} {self.patronymic}'
+
+
+class CadetProfile(models.Model):
+    user = models.OneToOneField(Cadet, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pics/', default='img/author.jpg', blank=True)
+
+    def str(self):
+        return self.user.name
 
 
 # excercise

@@ -19,6 +19,9 @@
     <!-- Подключение Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
+    <!-- FontAvesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-mQl/6EpLZB6WZUBKmUJGc8rF5udg/Oztxck/u3UZ9OUGbL9gga7OMqxhSLVFZDwF" crossorigin="anonymous">
+
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
@@ -89,9 +92,10 @@
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Обучающему</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/add_results/">Внесение результатов</a></li>
-            <li><a class="dropdown-item" href="/editing/">Изменение данных</a></li>
+            <li><a class="dropdown-item" href="/edit_users/">Изменение данных курсантов</a></li>
+            <li><a class="dropdown-item" href="/edit_groups/">Редактирование отделений</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Что-то еще</a></li>
+            <li><a class="dropdown-item" href="#">Выгрузка данных</a></li>
           </ul>
         </li>
         {% endif %}

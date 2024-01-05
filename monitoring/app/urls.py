@@ -1,6 +1,7 @@
 from django.urls import path, include
-from .views import index, login_view, control, author, test_page, add_results, editing, \
-    get_exercises_for_category, get_exercise_standard, get_cadets_from_dep, save_grading_data
+from .views import index, login_view, control, author, test_page, add_results, edit_users, \
+    get_exercises_for_category, get_exercise_standard, get_cadets_from_dep, save_grading_data, edit_groups, \
+    update_group, delete_group, delete_user, update_user
 from django.contrib.auth import views as auth_views
 
 app_name = 'app'
@@ -12,7 +13,12 @@ urlpatterns = [
     path('control/', control, name='control'),
     path('author/', author, name='author'),
     path('test_page/', test_page, name='test_page'),
-    path('editing/', editing, name='editing'),
+    path('edit_users/', edit_users, name='edit_users'),
+    path('update_user/<int:pk>/', update_user, name='update_user'),
+    path('delete_user/<int:pk>/', delete_user, name='delete_user'),
+    path('edit_groups/', edit_groups, name='edit_groups'),
+    path('update_group/<int:pk>/', update_group, name='update_group'),
+    path('delete_group/<int:pk>/', delete_group, name='delete_group'),
     path('add_results/', add_results, name='add_results'),
     path('get_exercises_for_category/<int:category_id>/',
          get_exercises_for_category, name='get_exercises_for_category'),
