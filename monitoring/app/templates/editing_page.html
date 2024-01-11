@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Edititing page{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row" id="message-container">
+        {% if success %}
+            <div class="alert alert-success" role="alert">
+                Запись добавлена
+            </div>
+        {% endif %}
+        {% if success_update %}
+            <div class="alert alert-success" role="alert">
+                Данные обновлены
+            </div>
+        {% endif %}
+        {% if success_delete %}
+            <div class="alert alert-success" role="alert">
+                Данные удалены
+            </div>
+        {% endif %}
+    </div>
+
+    {% if update %}
+    <div class="row">
+        <h2 class="mt-4 text-center">Редактирование данных</h2>
+        <form id="update_data" method="post">
+                {% csrf_token %}
+                {{form}}
+        </form>
+        <div>
+            <button form="update_data" type="submit" class="btn btn-primary mt-5">Обновить</button>
+            <a href="/editing_page/" class="btn btn-secondary mt-5">Назад</a>
+        </div>
+    </div>
+    {% else %}
+
+    <div class="row">
+        <h2 class="mt-4 text-center">Редактирование данных</h2>
+
+        <div class="col-md-6 mt-4">
+            <form method="post" action="">
+                {% csrf_token %}
+                <label for="id_model_name">Выберите субъект обучения:</label>
+                <select name="model_name" id="id_model_name">
+                    <option value="" {% if not model_name %}selected{% endif %}></option>
+                    <option value="Cadet">Кадеты</option>
+                    <option value="Departament">Отделения</option>
+                    <option value="Platoon">Взводы</option>
+                    <option value="Company">Роты</option>
+                    <option value="Faculty">Факультеты</option>
+                </select>
+            </form>
+        </div>
+        <div class="col-md-6 mt-4">
+            <form method="get" action="" id="filters-form">
+                <div class="text-center">
+                    {% if form %}
+                    <input type="text" name="search" placeholder="Поиск" value="{{ search_term }}">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                    <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+                      Добавить
+                    </button>
+                    {% else %}
+                    <input type="text" name="search" disabled placeholder="Поиск" value="{{ search_term }}">
+                    <button type="submit" disabled class="btn btn-secondary"><i class="fas fa-search"></i></button>
+                    <button type="button" disabled class="btn btn-secondary ml-3" data-toggle="modal" data-target="#exampleModal">
+                      Добавить
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="row">
+        <table id="data-table" class="table table-bordered mt-4">
+
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                    <th scope="col" style="width: 50px;">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for h, value in row.items %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                    <td scope="col">
+                      <div class="container">
+                          <div class="row">
+                                <div class="col-md-6">
+                                    <a href="{% url 'app:update_object' obj=model_name pk=row.id %}"><i class="fas fa-pencil-alt"></i></a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{% url 'app:delete_object' obj=model_name pk=row.id %}"><i class="fas fa-trash"></i></a>
+                                </div>
+                          </div>
+                      </div>
+                  </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endif %}
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Добавление записи</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form id="add_form" method="post">
+                    {% csrf_token %}
+                    {{form}}
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button type="submit" form='add_form' id="submit-button" data-dismiss="modal" class="btn btn-primary">Добавить</button>
+              </div>
+            </div>
+          </div>
+    </div>
+</div>
+
+<script>
+
+    function updT(modelName) {
+    fetch('/get_editing_table/?model_name=' + modelName)
+        .then(response => response.text())  // Получаем текстовый HTML-код
+        .then(html => {
+            const newDocument = new DOMParser().parseFromString(html, 'text/html');
+
+            // Набор идентификаторов элементов для замены
+            const elementIdsToReplace = ['data-table', 'exampleModal', 'filters-form'];
+
+            elementIdsToReplace.forEach(id => {
+                const newElement = newDocument.getElementById(id);
+                const currentElement = document.getElementById(id);
+
+                if (newElement && currentElement && currentElement.parentNode) {
+                    currentElement.parentNode.replaceChild(newElement.cloneNode(true), currentElement);
+                }
+            });
+           })
+        .catch(error => console.error('Error fetching data:', error));
+    };
+
+    function updateTable(modelName){
+        fetch('/get_editing_table/?model_name=' + modelName)
+            .then(response => response.text())  // Получаем текстовый HTML-код
+            .then(html => {
+                const newDocument = new DOMParser().parseFromString(html, 'text/html');
+
+                // Набор идентификаторов элементов для замены
+                const elementIdsToReplace = ['data-table', 'exampleModal', 'filters-form'];
+
+                elementIdsToReplace.forEach(id => {
+                    const newElement = newDocument.getElementById(id);
+                    const currentElement = document.getElementById(id);
+
+                    if (newElement && currentElement && currentElement.parentNode) {
+                        currentElement.parentNode.replaceChild(newElement.cloneNode(true), currentElement);
+                    }
+                });
+
+                const formElement = document.getElementById('add_form');
+                const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+                document.getElementById('submit-button').addEventListener('click', function (event) {
+                    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+                    const formData = new FormData(formElement);
+
+                    fetch('/save_new_obj/?model_name=' + modelName, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken, // Добавляем CSRF-токен к заголовкам запроса,
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        showMessage('success', 'Сохранение прошло успешно!');
+                        console.log(data);
+                        updT(modelName);
+                    })
+                    .catch(error => {
+                        showMessage('error', 'Произошла ошибка при сохранении.');
+                        console.error('Error sending data to the server', error);
+                    });
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    };
+
+
+    document.getElementById('id_model_name').addEventListener('change', function() {
+        var modelName = this.value;
+        updateTable(modelName);
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Получаем элемент <select> по его ID
+        var selectElement = document.getElementById('id_model_name');
+
+        // Получаем значение model_name из Django-контекста
+        var model_name = "{{ model_name }}";
+
+        // Проверяем, что model_name не равно 'None'
+        if (model_name !== 'None') {
+            // Проходим по всем <option> и делаем активным тот, у которого значение совпадает с model_name
+            for (var i = 0; i < selectElement.options.length; i++) {
+                var option = selectElement.options[i];
+                if (option.value === model_name) {
+                    option.selected = true;
+                    break;  // Прерываем цикл, так как нашли совпадение
+                }
+            }
+            updateTable(model_name);
+        }
+    });
+
+
+function showMessage(type, text) {
+        var messageContainer = document.getElementById('message-container');
+
+        // Создание нового элемента сообщения
+        var messageElement = document.createElement('div');
+        messageElement.classList.add('alert');
+
+        if (type === 'success') {
+            messageElement.classList.add('alert-success');
+        } else if (type === 'error') {
+            messageElement.classList.add('alert-danger');
+        }
+
+        // Установка текста сообщения
+        messageElement.textContent = text;
+
+        // Добавление элемента к контейнеру сообщений
+        messageContainer.appendChild(messageElement);
+
+        // Задержка перед удалением сообщения (например, 5 секунд)
+        setTimeout(function () {
+            messageElement.remove();
+        }, 5000);
+    }
+</script>
+
+
+
+{% endblock %}

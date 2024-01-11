@@ -1,13 +1,15 @@
 import datetime
-
+from django.db.models import F, Value, CharField
+from django.db.models.functions import Concat
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.template.loader import render_to_string
 from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbsenceForm, SetCadetResultForm, \
     SetUniformForm, EditDepartamentForm, EditCadetForm
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading
 from django.http import JsonResponse
@@ -182,12 +184,20 @@ def edit_groups(request):
 def update_group(request, pk):
     success_update = False
     get_group = get_object_or_404(Departament, pk=pk)
-    #get_group = Departament.objects.get(pk=pk)
     if request.method == 'POST':
         form = EditDepartamentForm(request.POST, instance=get_group)
         if form.is_valid():
             form.save()
             success_update = True
+        else:
+            # Form is not valid, include it in the context for displaying errors
+            context = {
+                'get_group': get_group,
+                'update': True,
+                'form': form,  # Pass the form with errors to the context
+                'success_update': success_update
+            }
+            return render(request, 'edit_groups.html', context)
 
     context = {
         'get_group': get_group,
@@ -264,3 +274,142 @@ def delete_user(request, pk):
 
     return redirect('app:edit_users')
 
+
+@login_required
+def editing_page(request):
+    return render(request, 'editing_page.html')
+
+
+@login_required
+def save_new_obj(request):
+    form = None
+    if request.method == 'POST':
+        model_name = request.GET.get('model_name')
+        if model_name == 'Cadet':
+            form = EditCadetForm(request.POST)
+        elif model_name == 'Departament':
+            form = EditDepartamentForm(request.POST)
+
+        try:
+            if form and form.is_valid():
+                form.save()
+            else:
+                raise Exception
+        except Exception as e:
+            return HttpResponseBadRequest
+
+    context = {'success': True}
+    return JsonResponse(context)
+    # context = {
+    #     'success': success
+    # }
+    # return render(request, 'editing_page.html', context)
+
+
+@login_required
+def get_editing_table(request):
+    form = None
+    headers = []
+    data = []
+    model_name = None
+    # search_term = request.GET.get('search', '')
+    if request.method == 'GET':
+        model_name = request.GET.get('model_name')
+        if model_name == 'Cadet':
+            model_class = Cadet
+            form = EditCadetForm()
+            # data = model_class.objects.annotate(
+            #     fio=Concat(
+            #         F('surname'),
+            #         Value(' '),
+            #         F('name'),
+            #         Value(' '),
+            #         F('patronymic'),
+            #         output_field=CharField()
+            #     )
+            # ).values('id', 'fio', 'rank__name', 'course__name', 'departament__name').order_by('-id')
+            # headers = ['ID', 'ФИО', 'Звание', 'Курс', 'Отделение']
+        elif model_name == 'Departament':
+            model_class = Departament
+            form = EditDepartamentForm()
+            # data = model_class.objects.all().order_by('-id').values('id', 'name', 'platoon__name', 'course__name')
+        else:
+            return JsonResponse({"error": "Invalid model_name"})
+
+        headers = [field.verbose_name for field in model_class._meta.fields]
+
+        fields_to_include = []
+        for field in model_class._meta.fields:
+            fields_to_include.append(field.name if '_id' not in field.column else field.name + '__name')
+        data = model_class.objects.all().order_by('-id').values(*fields_to_include)
+
+    context = {
+        'form': form,
+        'headers': headers,
+        'data': data,
+        'model_name': model_name
+    }
+    return render(request, 'editing_page.html', context)
+
+    # cadets = Cadet.objects.all().order_by('-id')
+    # if search_term:
+    #     cadets = cadets.filter(name__icontains=search_term) | \
+    #              cadets.filter(surname__icontains=search_term) | \
+    #              cadets.filter(rank__name__icontains=search_term) | \
+    #              cadets.filter(departament__name__icontains=search_term) | \
+    #              cadets.filter(course__name__icontains=search_term) | \
+    #              cadets.filter(patronymic__icontains=search_term)
+    #
+    # returned_form = EditCadetForm
+
+@login_required
+def delete_object(request, obj, pk):
+    model_class=None
+    if obj == 'Cadet':
+        model_class = Cadet
+    elif obj == 'Departament':
+        model_class = Departament
+    get_article = get_object_or_404(model_class, pk=pk)
+    get_article.delete()
+
+    context = {
+        'success_delete': True,
+        'model_name': obj
+    }
+    return render(request, 'editing_page.html', context)
+
+@login_required
+def update_object(request, obj, pk):
+    model_class = None
+    form_model = None
+    if obj == 'Cadet':
+        model_class = Cadet
+        form_model = EditCadetForm
+    elif obj == 'Departament':
+        model_class = Departament
+        form_model = EditDepartamentForm
+    success_update = False
+    get_group = get_object_or_404(model_class, pk=pk)
+    if request.method == 'POST':
+        form = form_model(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+
+    if success_update:
+        context = {
+            'get_group': get_group,
+            'form': form_model(instance=get_group),
+            'success_update': success_update,
+            'model_name': obj
+        }
+    else:
+        context = {
+            'get_group': get_group,
+            'update': True,
+            'form': form_model(instance=get_group),
+            'success_update': success_update,
+            'model_name': obj
+        }
+
+    return render(request, 'editing_page.html', context)

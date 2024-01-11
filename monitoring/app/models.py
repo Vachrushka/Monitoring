@@ -11,38 +11,39 @@ class Course(models.Model):
 
 
 class Faculty(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name='Название')
 
     def __str__(self):
         return self.name
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=255)
-    faculty = models.ForeignKey(Faculty, on_delete=models.PROTECT)
+    name = models.CharField(max_length=255, verbose_name='Название')
+    faculty = models.ForeignKey(Faculty, on_delete=models.PROTECT, verbose_name='Факультет')
 
     def __str__(self):
         return f'{self.faculty} - {self.name}'
 
 
 class Platoon(models.Model):
-    name = models.CharField(max_length=255)
-    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    name = models.CharField(max_length=255, verbose_name='Название')
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, verbose_name='Рота')
 
     def __str__(self):
         return f'{self.company} - {self.name}'
 
 
 class Departament(models.Model):
-    name = models.CharField(max_length=255)
-    platoon = models.ForeignKey(Platoon, on_delete=models.PROTECT)
-    course = models.ForeignKey(Course, on_delete=models.PROTECT, default=1)
+    name = models.CharField(max_length=255, verbose_name='Название')
+    platoon = models.ForeignKey(Platoon, on_delete=models.PROTECT, verbose_name='Взвод')
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, default=1, verbose_name='Курс')
 
     def __str__(self):
         return f'{self.platoon} - {self.name} - {self.course}'
 
     class Meta:
         unique_together = ('name', 'platoon', 'course')
+        verbose_name = 'Отделение'
 
 
 # cadet
@@ -57,26 +58,26 @@ class Rank(models.Model):
 
 class Cadet(models.Model):
     # Персональные данные
-    name = models.CharField(max_length=255)
-    surname = models.CharField(max_length=255)
-    patronymic = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name='Имя')
+    surname = models.CharField(max_length=255, verbose_name='Фамилия')
+    patronymic = models.CharField(max_length=255, verbose_name='Отчество')
     # photo = models.ImageField(upload_to='learner_photos/', null=True, blank=True)
-    rank = models.ForeignKey(Rank, on_delete=models.PROTECT)
+    rank = models.ForeignKey(Rank, on_delete=models.PROTECT, verbose_name='Звание')
 
     # Информация о курсе обучения
-    course = models.ForeignKey(Course, on_delete=models.PROTECT)
-    departament = models.ForeignKey(Departament, on_delete=models.PROTECT)
+    course = models.ForeignKey(Course, on_delete=models.PROTECT, verbose_name='Курс')
+    departament = models.ForeignKey(Departament, on_delete=models.PROTECT, verbose_name='Отделение')
 
     def __str__(self):
         return f'{self.surname} {self.name} {self.patronymic}'
 
 
-class CadetProfile(models.Model):
-    user = models.OneToOneField(Cadet, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pics/', default='img/author.jpg', blank=True)
-
-    def str(self):
-        return self.user.name
+# class CadetProfile(models.Model):
+#     user = models.OneToOneField(Cadet, on_delete=models.CASCADE)
+#     profile_picture = models.ImageField(upload_to='profile_pics/', default='img/author.jpg', blank=True)
+#
+#     def str(self):
+#         return self.user.name
 
 
 # excercise

@@ -90,6 +90,7 @@ class EditDepartamentForm(forms.ModelForm):
             self.fields[field].widget.attrs['class'] = 'form-control'
 
 
+
 class EditCadetForm(forms.ModelForm):
     class Meta:
         model = Cadet
@@ -107,3 +108,4 @@ class EditCadetForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
+
