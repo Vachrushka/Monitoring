@@ -1,6 +1,6 @@
 from django import forms
 from .models import Category, Exercise, Departament, AbsenceReason, Cadet, Uniforms
-
+from datetime import date
 
 class SetCategoryForm(forms.ModelForm):
     category = forms.ModelChoiceField(queryset=Category.objects.all(),
@@ -108,4 +108,25 @@ class EditCadetForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+class FilterForm(forms.Form):
+    categories = Category.objects.all()
+
+    # Создаем список кортежей в формате ('значение', 'отображаемое_название')
+    category_choices = [(category.id, category.name) for category in categories]
+
+
+    name = forms.CharField(required=True, label='ФИО',
+                           widget=forms.TextInput(attrs={'class': 'form-control mr-2', 'placeholder': 'Начните вводить имя'}),
+                           error_messages={'required': 'Пожалуйста, заполните поле "ФИО".'})
+    discipline = forms.ChoiceField(
+        choices=category_choices,
+        label='Дисциплина',
+        widget=forms.Select(attrs={'class': 'form-control mr-2'})
+    )
+    start_date = forms.DateField(label='Время (с)',
+                                 widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mr-2'}))
+    end_date = forms.DateField(label='Время (по)',
+                               widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mr-2'}))
 
