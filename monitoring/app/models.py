@@ -1,5 +1,6 @@
 from django.db import models
-from django.utils import timezone
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 # learning hierarchy
 
@@ -107,10 +108,12 @@ class ExerciseStandard(models.Model):
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
     uniform_type = models.ForeignKey(Uniforms, on_delete=models.PROTECT)
     description = models.CharField(max_length=255, blank=True, null=True)
-    value = models.FloatField()
+    value_satisfactory = models.FloatField(default=0)
+    value_fine = models.FloatField(default=0)
+    value_great = models.FloatField(default=0)
 
     def __str__(self):
-        return f"{self.exercise} - {self.course.name} - {self.value} - {self.description}"
+        return f"{self.exercise} - {self.course.name} - {self.value_satisfactory}:{self.value_fine}:{self.value_great} - {self.description} "
 
 
 class AbsenceReason(models.Model):
@@ -139,3 +142,13 @@ class Grading(models.Model):
 class Professor(models.Model):
     username = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
+
+
+
+# leader table
+
+class LeaderData(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    leader_object = GenericForeignKey('content_type', 'object_id')
+    position_delta = models.IntegerField(default=0)

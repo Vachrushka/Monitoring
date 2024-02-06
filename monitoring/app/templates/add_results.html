@@ -50,12 +50,12 @@
             <h3>Норматив по дисциплине</h3>
             <!-- Блок для отображения value -->
             <div>
-                <p id="value-container">Значение: </p>
+                <p id="value-container">Норматив не получен</p>
             </div>
 
             <!-- Блок для отображения description -->
             <div>
-                <p id="description-container">Описание: </p>
+                <p id="description-container">Описание не получено</p>
             </div>
         </div>
     </div>
@@ -168,14 +168,33 @@
 
                 var descriptionField = document.getElementById('description-container');
                 if (descriptionField && 'description' in data && data.description !== null) {
-                    descriptionField.textContent = 'Описание: ' + data.description;
+
+                    resultString = `
+                    <table>
+                    <tr><td valign='top'><h6>Описание:</h6></td><td style='padding-left: 10px'>${data.description}</td></tr>
+                    </table>
+                    `
+                    descriptionField.innerHTML = resultString;
                 } else {
                     descriptionField.textContent = 'Описание отсутствует';
                 }
 
                 var valueField = document.getElementById('value-container');
-                if (valueField && 'value' in data && data.value !== null) {
-                    valueField.textContent = 'Норматив: ' + data.value;
+
+                if (valueField && 'value_satisfactory' in data) {
+                    var val_s = (data.value_satisfactory !== null && !isNaN(data.value_satisfactory)) ? data.value_satisfactory.toString() : 'отсутствует';
+                    var val_f = (data.value_fine !== null && !isNaN(data.value_fine)) ? data.value_fine.toString() : 'отсутствует';
+                    var val_g = (data.value_great !== null && !isNaN(data.value_great)) ? data.value_great.toString() : 'отсутствует';
+
+                    resultString = `<h6>Норматив</h6>
+                    <table>
+                    <tr><td>Отлично: </td><td>${val_g}</td></tr>
+                    <tr><td>Хорошо: </td><td>${val_f}</td></tr>
+                    <tr><td>Удовл.: </td><td>${val_s}</td></tr>
+                    </table>
+                    `
+                    valueField.innerHTML = resultString;
+
                 } else {
                     valueField.textContent = 'Норматив отсутствует';
                 }

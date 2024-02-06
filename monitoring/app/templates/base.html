@@ -55,44 +55,43 @@
 </head>
 <body>
     <!-- Шапка навигации-->
-    <div class="header_shapka">
-        <div class="header_zaliv">
-            <div class="container">
-                 <div class="row">
-                    <div class="col-md-1">
-                        <a class="navbar-brand sepia" href="/">
-                            <img src="{% static 'img/logo.png' %}" alt="Logo" class="sepia">
-                        </a>
+    <div class="container-fluid header_shapka_2 header_zaliv_2 p-0">
+        <div class="semi-transparent-bg w-100">
+             <div class="row pl-3">
+            <div class="col-md-1 d-flex justify-content-center align-items-center pr-0">
+                <a class="sepia" href="/">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo" class="sepia img-fluid">
+                </a>
+            </div>
+             <div class="col-md-1 d-flex justify-content-center align-items-center pl-0">
+                <a href="/">
+                    <img src="{% static 'img/logopvi2023.png' %}" alt="Logo" class="img-fluid">
+                </a>
+            </div>
+            <div class="col-md-5">
+                <div class="container">
+                    <div class="text-left">
+                        <br><br>
+                        <h2 class="text_header">Название программы</h2>
+                        <h4 class="text_header">Мониторинг физической готовности</h4>
                     </div>
-                     <div class="col-md-1">
-                        <a class="navbar-brand" href="/">
-                            <img src="{% static 'img/logopvi2023.png' %}" alt="Logo">
-                        </a>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="container">
-                            <div class="text-left">
-                                <br><br>
-                                <h2 class="text_header">Название программы</h2>
-                                <h4 class="text_header">Мониторинг физической готовности</h4>
-                            </div>
-                        </div>
-                    </div>
-                     <div class="col-md-3"></div>
-                     <div class="col-md-2">
-                         <div class="container">
-                            <div class="text-right">
-                                <br><br><br>
-                                <h6 class="text_header">Инфо</h6>
-                                <h6 class="text_header">Телефон</h6>
-                            </div>
-                        </div>
-                     </div>
                 </div>
             </div>
-
+             <div class="col-md-3"></div>
+             <div class="col-md-2">
+                 <div class="container">
+                    <div class="text-right">
+                        <br><br><br>
+                        <h6 class="text_header">Инфо</h6>
+                        <h6 class="text_header">Телефон</h6>
+                    </div>
+                </div>
+             </div>
+        </div>
         </div>
     </div>
+
+
     <ul class="nav nav-tabs" id="myTabs">
         <li class="nav-item" style="margin-left: 150px;">
           <a class="nav-link" aria-current="page" href="/">Главная</a>

@@ -1,22 +1,13 @@
 /* static/css/styles.css */
-.header_zaliv{
-     background-color: rgba(201, 20, 53, 0.5); /* Сплошной цвет поверх картинки 235, 202, 38*/
-     height: 100%;
-     width: 100%;
-     padding: 10px; /* Добавить отступы вокруг контента */
+
+.header_shapka_2 {
+background-image: url('/static/img/zerna_haki.jpg'); /* Замените на путь к вашему изображению */
+    background-size: cover; /* Это свойство позволяет изображению покрывать весь фон */
+    background-repeat: no-repeat;
 }
 
-.header_shapka {
-    position: relative;
-    height: 20vh; /* 1/5 высоты экрана */
-    background-image: url('/static/img/zerna_haki.jpg'); /* Путь к вашей фоновой картинке */
-    background-size: cover;
-    align-items: center;
-}
-
-.navbar-brand img {
-        height: 110px; /* Высота изображения */
-        margin-top: 30px;
+.semi-transparent-bg {
+        background-color: rgba(201, 20, 53, 0.5);
     }
 
 .text_header {
@@ -41,9 +32,5 @@ footer {
     background-color: #333;
     color: #fff;
     padding: 20px;
-}
-
-.megamargin {
-    margin-left: 50px;
 }
 

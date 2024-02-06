@@ -10,7 +10,7 @@ from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbse
     SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
-from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category
+from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category, Course
 from django.http import JsonResponse
 from django.views import View
 from django import forms
@@ -18,7 +18,7 @@ import logging
 import json
 from datetime import datetime, timedelta
 import pytz
-from .utils import get_filled_data
+# from .utils import get_filled_data
 
 logger = logging.getLogger(__name__)
 
@@ -214,9 +214,11 @@ def get_exercise_standard(request, exercise_id, departament_id, uniform_id):
     departament = get_object_or_404(Departament, pk=departament_id)
     uniform = get_object_or_404(Uniforms, pk=uniform_id)
     # Получение соответствующего ExerciseStandard
+    # 3-5 курсы имеют норматив 3-го курса
+    cource = departament.course if int(departament.course.name) <= 3 else get_object_or_404(Course, name='3')
     exercise_standart = ExerciseStandard.objects.filter(
         exercise=exercise,
-        course=departament.course,
+        course=cource,
         uniform_type=uniform
     ).first()
 
@@ -224,7 +226,9 @@ def get_exercise_standard(request, exercise_id, departament_id, uniform_id):
     if exercise_standart:
         # Возвращение данных в формате JSON
         return JsonResponse({
-            'value': exercise_standart.value,
+            'value_satisfactory': exercise_standart.value_satisfactory,
+            'value_fine': exercise_standart.value_fine,
+            'value_great': exercise_standart.value_great,
             'description': exercise_standart.description,
             # Другие поля exercise_standart
         })
@@ -521,3 +525,24 @@ def update_object(request, obj, pk):
         }
 
     return render(request, 'editing_page.html', context)
+
+
+
+# from django.http import JsonResponse
+# from django.shortcuts import render
+# from django.views.decorators.csrf import csrf_exempt
+#
+# from .tasks import demo_task
+# demo_task("wqw", repeat=60)
+# @csrf_exempt
+# def tasks(request):
+#     if request.method == 'POST':
+#         return _post_tasks(request)
+#     else:
+#         return JsonResponse({}, status=405)
+#
+# def _post_tasks(request):
+#     message = request.POST['message']
+#     logger.debug('calling demo_task. message={0}'.format(message))
+#     demo_task(message)
+#     return JsonResponse({}, status=302)
