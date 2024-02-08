@@ -2,6 +2,7 @@ from django.db.models import F, Value, CharField
 from django.db.models.functions import Concat
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -10,7 +11,8 @@ from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbse
     SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
-from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category, Course
+from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category,\
+    Course, Faculty,Company,Platoon,LeaderData
 from django.http import JsonResponse
 from django.views import View
 from django import forms
@@ -245,6 +247,32 @@ def get_cadets_from_dep(request, departament_id):
     cadets = Cadet.objects.filter(departament_id=departament_id).values('id', 'name', "surname", "patronymic")
     return JsonResponse({'exercises': list(cadets)})
 
+import threading
+from django.shortcuts import render
+import time
+
+lock = threading.Lock()
+def update_leadtable_task():
+    logger.info('update_leadtable_task started')
+
+    old_leaders = LeaderData.objects.all()
+    LeaderData.objects.all().delete()
+    # сформировать новую таблицу
+    models = [Cadet, Departament, Platoon, Company, Faculty]
+    for model in models:
+        # получить все данные таблицs
+        model_data = model.objects.all()
+        content_type = ContentType.objects.get_for_model(model)
+        for obj in model_data:
+            LeaderData.objects.create(content_type=content_type, object_id=obj.pk,
+                                      leader_object=obj, position_delta=0).save()
+
+
+    # получить старую таблицу, получить прирост для всех полей
+    # сохрантиь
+
+    logger.info('update_leadtable_task end')
+
 
 @login_required
 @require_POST
@@ -267,6 +295,13 @@ def save_grading_data(request):
                     f"{item['date']} {datetime.now().time().strftime('%H:%M:%S')}", "%Y-%m-%d %H:%M:%S"))
             )
         messages.success(request, 'Сохранение прошло успешно!')
+        # запуск задачи на обновление таблицы лидеров
+        if not lock.locked():
+            # Блокируем задачу
+            with lock:
+                # Запуск задачи в фоне
+                background_thread = threading.Thread(target=update_leadtable_task)
+                background_thread.start()
         return JsonResponse({'success': True})
     except Exception as e:
         messages.error(request, 'Произошла ошибка при сохранинии.')

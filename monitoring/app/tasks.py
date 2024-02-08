@@ -20,3 +20,7 @@
 #
 #     logger.debug('update_leadtable_task end')
 #
+import time
+def update_leadtable_task():
+    time.sleep(1000)
+    print("......")
