@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Exercise, Departament, AbsenceReason, Cadet, Uniforms
+from .models import Category, Exercise, Departament, AbsenceReason, Cadet, Uniforms, Platoon, Company, Faculty
 from datetime import date
 
 class SetCategoryForm(forms.ModelForm):
@@ -90,6 +90,46 @@ class EditDepartamentForm(forms.ModelForm):
             self.fields[field].widget.attrs['class'] = 'form-control'
 
 
+class EditPlatoonForm(forms.ModelForm):
+    class Meta:
+        model = Platoon
+        fields = '__all__'
+        labels = {
+            "name": "Название",
+            "company": "Направление",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+class EditCompanyForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = '__all__'
+        labels = {
+            "name": "Название",
+            "faculty": "Факультет",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+class EditFacultyForm(forms.ModelForm):
+    class Meta:
+        model = Faculty
+        fields = '__all__'
+        labels = {
+            "name": "Название",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 class EditCadetForm(forms.ModelForm):
     class Meta:

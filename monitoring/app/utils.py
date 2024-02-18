@@ -1,3 +1,19 @@
+
+
+def calculate_points(result, min_r, max_r, koef_min, koef_top):
+    if min_r > max_r:
+      max_r, min_r = min_r, max_r
+    if min_r == max_r:
+      return 0
+    price = 100 / (max_r - min_r)
+    shift = 0
+    if result > max_r:
+        shift = result - max_r
+        result = max_r
+    rating = (result - min_r) / (max_r - min_r) * 10 * koef_min + shift * price * koef_top
+    return max(round(rating, 2), 0)
+
+
 # import pandas as pd
 # from datetime import datetime
 #

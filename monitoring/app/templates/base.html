@@ -55,30 +55,32 @@
 </head>
 <body>
     <!-- Шапка навигации-->
-    <div class="container-fluid header_shapka_2 header_zaliv_2 p-0">
+    <div class="container-fluid header_shapka_2 p-0">
         <div class="semi-transparent-bg w-100">
-             <div class="row pl-3">
-            <div class="col-md-1 d-flex justify-content-center align-items-center pr-0">
-                <a class="sepia" href="/">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo" class="sepia img-fluid">
-                </a>
-            </div>
-             <div class="col-md-1 d-flex justify-content-center align-items-center pl-0">
-                <a href="/">
-                    <img src="{% static 'img/logopvi2023.png' %}" alt="Logo" class="img-fluid">
-                </a>
-            </div>
-            <div class="col-md-5">
-                <div class="container">
-                    <div class="text-left">
-                        <br><br>
-                        <h2 class="text_header">РосгVардия-Спорт</h2>
-                        <h4 class="text_header">Система мониторинга показателей физической подготовленности</h4>
+             <div class="row pl-3 mr-0">
+                <div class="col-md-1 d-flex justify-content-center align-items-center pr-0">
+                    <a class="sepia" href="/">
+                        <img src="{% static 'img/logo.png' %}" alt="Logo" class="sepia img-fluid">
+                    </a>
+                </div>
+                <div class="col-md-1 d-flex justify-content-center align-items-center pl-0">
+                    <a href="/">
+                        <img src="{% static 'img/logopvi2023.png' %}" alt="Logo" class="img-fluid">
+                    </a>
+                </div>
+                <div class="col-md-5">
+                    <div class="container">
+                        <div class="text-left">
+                            <br><br>
+                            <h2 class="text_header d-flex">
+                                <img src="{% static 'img/rosgvard_label.png' %}" alt="РОСГВАРДИЯ СПОРТ"
+                                                             style="vertical-align: middle; height: 50px;"></h2>
+                            <h4 class="text_header">Система мониторинга показателей физической подготовленности</h4>
+                        </div>
                     </div>
                 </div>
-            </div>
-             <div class="col-md-3"></div>
-             <div class="col-md-2">
+                <div class="col-md-3"></div>
+                <div class="col-md-2">
                  <div class="container">
                     <div class="text-right">
                         <br><br><br>
@@ -87,7 +89,7 @@
                     </div>
                 </div>
              </div>
-        </div>
+            </div>
         </div>
     </div>
 
@@ -104,9 +106,13 @@
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Обучающему</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/add_results/">Внесение результатов</a></li>
+            <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/edit_users/">Изменение данных курсантов</a></li>
             <li><a class="dropdown-item" href="/edit_groups/">Редактирование отделений</a></li>
-            <li><a class="dropdown-item" href="/editing_page/">Редактирование субъектов обучения</a></li>
+            <li><a class="dropdown-item" href="/edit_platoons/">Редактирование взводов</a></li>
+            <li><a class="dropdown-item" href="/edit_companies/">Редактирование направлений</a></li>
+            <li><a class="dropdown-item" href="/edit_faculty/">Редактирование факультетов</a></li>
+<!--            <li><a class="dropdown-item" href="/editing_page/">Редактирование субъектов обучения</a></li>-->
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">Выгрузка данных</a></li>
           </ul>

@@ -34,3 +34,35 @@ footer {
     padding: 20px;
 }
 
+/* Общие стили для треугольников */
+.triangle {
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.hoverable {
+    position: relative;
+    cursor: pointer;
+}
+
+.hoverable .hover-content {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 1;
+}
+
+.hoverable:hover .hover-content {
+    opacity: 1;
+    visibility: visible;
+}

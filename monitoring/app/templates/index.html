@@ -3,19 +3,13 @@
 {% block title %}Index Page{% endblock %}
 
 {% block content %}
-{% if messages %}
-{% for message in messages %}
-    <div class="alert alert-success" role="alert">
-        {{ message }}
-    </div>
-{% endfor %}
-{% endif %}
+<div id="message-container"></div>
 <div class="container mt-5 text-center">
     <div class="row mt-2">
         <h2>Лидербоард</h2>
 
         <h4>Курсант</h4>
-        <table class="table mt-2">
+        <table class="table mt-2" id="table-cadet">
             <thead>
                 <tr>
                     <th>Место</th>
@@ -24,220 +18,195 @@
                     <th>ФИО</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>+1</td>
-                    <td>95</td>
-                    <td>Иванов Иван Иванович</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>+1</td>
-                    <td>88</td>
-                    <td>Петров Петр Петрович</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>+1</td>
-                    <td>75</td>
-                    <td>Сидоров Сидор Сидорович</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>-1</td>
-                    <td>60</td>
-                    <td>Александров Александр Александрович</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>+1</td>
-                    <td>55</td>
-                    <td>Егоров Егор Егорович</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td>-1</td>
-                    <td>48</td>
-                    <td>Никитин Никита Никитович</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>+1</td>
-                    <td>40</td>
-                    <td>Михайлов Михаил Михайлович</td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td>+1</td>
-                    <td>35</td>
-                    <td>Андреев Андрей Андреевич</td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td>+1</td>
-                    <td>28</td>
-                    <td>Дмитриев Дмитрий Дмитриевич</td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td>-1</td>
-                    <td>20</td>
-                    <td>Сергеев Сергей Сергеевич</td>
-                </tr>
-            </tbody>
+            <tbody id="table-cadet-body"></tbody>
         </table>
 
         <h4>Отделение</h4>
-        <table class="table mt-2">
+        <table class="table mt-2" id="table-dep">
             <thead>
                 <tr>
                     <th>Место</th>
                     <th>Прирост</th>
                     <th>Балл (рейтинг)</th>
-                    <th>ФИО</th>
+                    <th>Наименование</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>+1</td>
-                    <td>95</td>
-                    <td>Иванов Иван Иванович</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>+1</td>
-                    <td>88</td>
-                    <td>Петров Петр Петрович</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>+1</td>
-                    <td>75</td>
-                    <td>Сидоров Сидор Сидорович</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>-1</td>
-                    <td>60</td>
-                    <td>Александров Александр Александрович</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>+1</td>
-                    <td>55</td>
-                    <td>Егоров Егор Егорович</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td>-1</td>
-                    <td>48</td>
-                    <td>Никитин Никита Никитович</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>+1</td>
-                    <td>40</td>
-                    <td>Михайлов Михаил Михайлович</td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td>+1</td>
-                    <td>35</td>
-                    <td>Андреев Андрей Андреевич</td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td>+1</td>
-                    <td>28</td>
-                    <td>Дмитриев Дмитрий Дмитриевич</td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td>-1</td>
-                    <td>20</td>
-                    <td>Сергеев Сергей Сергеевич</td>
-                </tr>
-            </tbody>
+            <tbody id="table-dep-body"></tbody>
         </table>
 
         <h4>Взвод</h4>
-        <table class="table mt-2">
+        <table class="table mt-2" id="table-plt">
             <thead>
                 <tr>
                     <th>Место</th>
                     <th>Прирост</th>
                     <th>Балл (рейтинг)</th>
-                    <th>ФИО</th>
+                    <th>Наименование</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="table-plt-body"></tbody>
+        </table>
+
+        <h4>Направление</h4>
+        <table class="table mt-2" id="table-cmp">
+            <thead>
                 <tr>
-                    <td>1</td>
-                    <td>+1</td>
-                    <td>95</td>
-                    <td>Иванов Иван Иванович</td>
+                    <th>Место</th>
+                    <th>Прирост</th>
+                    <th>Балл (рейтинг)</th>
+                    <th>Наименование</th>
                 </tr>
+            </thead>
+            <tbody id="table-cmp-body"></tbody>
+        </table>
+
+        <h4>Факультет</h4>
+        <table class="table mt-2" id="table-fcl">
+            <thead>
                 <tr>
-                    <td>2</td>
-                    <td>+1</td>
-                    <td>88</td>
-                    <td>Петров Петр Петрович</td>
+                    <th>Место</th>
+                    <th>Прирост</th>
+                    <th>Балл (рейтинг)</th>
+                    <th>Наименование</th>
                 </tr>
-                <tr>
-                    <td>3</td>
-                    <td>+1</td>
-                    <td>75</td>
-                    <td>Сидоров Сидор Сидорович</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>-1</td>
-                    <td>60</td>
-                    <td>Александров Александр Александрович</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>+1</td>
-                    <td>55</td>
-                    <td>Егоров Егор Егорович</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td>-1</td>
-                    <td>48</td>
-                    <td>Никитин Никита Никитович</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>+1</td>
-                    <td>40</td>
-                    <td>Михайлов Михаил Михайлович</td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td>+1</td>
-                    <td>35</td>
-                    <td>Андреев Андрей Андреевич</td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td>+1</td>
-                    <td>28</td>
-                    <td>Дмитриев Дмитрий Дмитриевич</td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td>-1</td>
-                    <td>20</td>
-                    <td>Сергеев Сергей Сергеевич</td>
-                </tr>
-            </tbody>
+            </thead>
+            <tbody id="table-fcl-body"></tbody>
         </table>
     </div>
 
 </div>
+
+<script>
+// Функция для построения таблицы на основе данных
+function buildTable(tableId, data, cad_pks) {
+    cad_pks = cad_pks || null;
+
+    var table = document.getElementById(tableId);
+    var tbody = document.getElementById(tableId + '-body');
+
+    // Очистить предыдущие данные
+    tbody.innerHTML = '';
+
+    // Построить строки таблицы
+    data.forEach(function(rowData, rowIndex) {
+        var row = document.createElement('tr');
+
+        rowData.forEach(function(cellData, index) {
+            var cell = document.createElement('td');
+            cell.appendChild(document.createTextNode(cellData));
+
+            // Добавить цветной треугольник во вторую колонку
+            if (index === 1) {
+                var triangle = document.createElement('div');
+                triangle.className = 'triangle';
+                triangle.dataset.value = cellData;
+
+                // Определить знак числа и установить соответствующий цвет и направление треугольника
+                if (parseFloat(cellData) > 0) {
+                    triangle.style.borderBottom = '10px solid green';
+                    triangle.style.borderLeft = '10px solid transparent';
+                    triangle.style.borderRight = '10px solid transparent';
+                } else if (parseFloat(cellData) < 0) {
+                    triangle.style.borderTop = '10px solid red'; // Вниз для отрицательных чисел
+                    triangle.style.borderLeft = '10px solid transparent';
+                    triangle.style.borderRight = '10px solid transparent';
+                }
+
+                cell.appendChild(triangle);
+            }
+            // Добавить класс hoverable и контент для ховер-эффекта к последнему столбцу
+            if (cad_pks!== null && index === rowData.length - 1) {
+                cell.classList.add('hoverable');
+                var hoverContent = document.createElement('div');
+                hoverContent.className = 'hover-content';
+                hoverContent.style.width = '110%';
+                url = `get_user_data/${cad_pks[rowIndex]}/`;
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка HTTP: ${response.status}`);
+                                }
+                        return response.json();})
+                    .then(us_data => {
+
+                        var allContainer = document.createElement('div');
+                        allContainer.className = 'container-fluid';
+                        hoverContent.appendChild(allContainer);
+
+                        var rowContainer = document.createElement('div');
+                        rowContainer.className = 'row';
+                        allContainer.appendChild(rowContainer);
+
+                        var imgContainer = document.createElement('div');
+                        imgContainer.className = 'col-md-5';
+                        rowContainer.appendChild(imgContainer);
+
+                        var infoContainer = document.createElement('div');
+                        infoContainer.className = 'col-md-7';
+                        infoContainer.marginRight = '5px';
+                        rowContainer.appendChild(infoContainer);
+
+                         // Вставьте изображение пользователя
+                        var userImage = document.createElement('img');
+                        userImage.src = us_data.photo_url;
+                        userImage.alt = cellData;
+                        userImage.style.width = '100%';
+                        imgContainer.appendChild(userImage);
+
+                        // Вставьте имя пользователя
+                        var userName = document.createElement('p');
+                        userName.textContent = `ФИО: ${us_data.full_name}`;
+                        userName.style.textAlign = 'left';
+                        infoContainer.appendChild(userName);
+
+                        var userName = document.createElement('p');
+                        userName.textContent = `Звание: ${us_data.rank}`;
+                        userName.style.textAlign = 'left';
+                        infoContainer.appendChild(userName);
+
+                        var userName = document.createElement('p');
+                        userName.textContent = `Обучение: ${us_data.departament}`;
+                        userName.style.textAlign = 'left';
+                        infoContainer.appendChild(userName);
+
+                        var userName = document.createElement('p');
+                        userName.textContent = `Курс: ${us_data.course}`;
+                        userName.style.textAlign = 'left';
+                        infoContainer.appendChild(userName);
+
+                })
+                .catch(error => {
+                    console.error('Ошибка при получении данных о пользователе:', error)
+                    hoverContent.appendChild(document.createTextNode(cellData));
+                    }
+                );
+                cell.appendChild(hoverContent);
+            }
+
+            row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+    });
+
+    // Добавить tbody в таблицу
+    table.appendChild(tbody);
+}
+
+// Получить данные с сервера
+fetch('/get_leaderboards/')
+    .then(response => response.json())
+    .then(data => {
+        // Построить таблицы
+        buildTable('table-fcl', data['table-fcl']);
+        buildTable('table-cmp', data['table-cmp']);
+        buildTable('table-plt', data['table-plt']);
+        buildTable('table-dep', data['table-dep']);
+        buildTable('table-cadet', data['table-cadet'], data['cadets_pk']);
+    })
+    .catch(error => console.error('Ошибка при получении данных:', error));
+
+</script>
 
 
 

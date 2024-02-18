@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.template.loader import render_to_string
 from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbsenceForm, SetCadetResultForm, \
-    SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm
+    SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm, EditPlatoonForm, EditCompanyForm, EditFacultyForm
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category,\
@@ -20,7 +20,7 @@ import logging
 import json
 from datetime import datetime, timedelta
 import pytz
-# from .utils import get_filled_data
+from .utils import calculate_points
 
 logger = logging.getLogger(__name__)
 
@@ -255,21 +255,167 @@ lock = threading.Lock()
 def update_leadtable_task():
     logger.info('update_leadtable_task started')
 
-    old_leaders = LeaderData.objects.all()
+    old_leaders = LeaderData.objects.all()  # old rate, прирост
     LeaderData.objects.all().delete()
     # сформировать новую таблицу
-    models = [Cadet, Departament, Platoon, Company, Faculty]
+    models = [Departament, Platoon, Company, Faculty]
+
+    # рейтинг - сумма по всем дисциплинам
+    # берем сумму последних рейтинг по ним для каждого кадета
+    excercises = Exercise.objects.all()
+    form_type = Uniforms.objects.all()
+
+    content_type = ContentType.objects.get_for_model(Cadet)
+    new_result_cadets = []
+    for cadet in Cadet.objects.all():
+        summary_rate = 0
+        delta = 0
+        for ex in excercises:
+            for form in form_type:
+                latest_grading = Grading.objects.filter(uniform_type=form.id, student_id=cadet.id, exercise_id=ex.id, rate__isnull=False).order_by('-datetime')[:2]
+                if len(latest_grading) == 1:
+                    summary_rate += latest_grading[0].rate
+                elif len(latest_grading) == 2:
+                    summary_rate += latest_grading[0].rate
+                    delta += latest_grading[0].rate - latest_grading[1].rate
+
+        res = LeaderData.objects.create(content_type=content_type, object_id=cadet.pk,
+                                  leader_object=cadet, position_delta=delta,
+                                  rate=summary_rate)
+        new_result_cadets.append(res)
+        res.save()
+
+    def get_rates(object, o_l):
+        cls = type(object)
+        content_type = ContentType.objects.get_for_model(cls)
+
+        old_rate = 0
+        for lead in o_l:
+            if lead.content_type == content_type and lead.object_id == object.pk:
+                old_rate = lead.rate if lead.rate else 0
+
+        # подсчет нового
+        summary_rate = 0
+        # получить все объекты нижнего в иерархии объекта, ссылаемого на этот объект
+        if cls is Departament:
+            # получить grades всех кадетов
+            cads_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Cadet))
+            # фильтруем - оставляем тех, у кого такой же dep
+            dep_cadets = Cadet.objects.filter(departament=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            for c_gr in cads_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+        elif cls is Platoon:
+            dep_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Departament))
+            dep_cadets = Departament.objects.filter(platoon=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            for c_gr in dep_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+        elif cls is Company:
+            comp_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Platoon))
+            dep_cadets = Platoon.objects.filter(company=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            for c_gr in comp_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+        elif cls is Faculty:
+            facl_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Company))
+            dep_cadets = Company.objects.filter(faculty=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            for c_gr in facl_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+
+        return old_rate, summary_rate
+
+    def get_rates_2(object):
+        cls = type(object)
+        # подсчет нового
+        summary_rate = 0
+        delta = 0
+        # получить все объекты нижнего в иерархии объекта, ссылаемого на этот объект
+        if cls is Departament:
+            # получить grades всех кадетов
+            cads_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Cadet))
+            # фильтруем - оставляем тех, у кого такой же dep
+            dep_cadets = Cadet.objects.filter(departament=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            delta_gr = []
+            for c_gr in cads_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+                    delta_gr.append(c_gr.position_delta)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+            delta = sum([gr for gr in delta_gr])
+        elif cls is Platoon:
+            dep_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Departament))
+            dep_cadets = Departament.objects.filter(platoon=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            delta_gr = []
+            for c_gr in dep_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+                    delta_gr.append(c_gr.position_delta)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+            delta = sum([gr for gr in delta_gr])
+        elif cls is Company:
+            comp_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Platoon))
+            dep_cadets = Platoon.objects.filter(company=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            delta_gr = []
+            for c_gr in comp_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+                    delta_gr.append(c_gr.position_delta)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+            delta = sum([gr for gr in delta_gr])
+        elif cls is Faculty:
+            facl_grades = LeaderData.objects.filter(content_type=ContentType.objects.get_for_model(Company))
+            dep_cadets = Company.objects.filter(faculty=object)
+            ids = [cad.pk for cad in dep_cadets]
+            sum_gr = []
+            delta_gr = []
+            for c_gr in facl_grades[:]:
+                if c_gr.object_id in ids:
+                    sum_gr.append(c_gr.rate)
+                    delta_gr.append(c_gr.position_delta)
+            # просуммировать
+            summary_rate = sum([gr for gr in sum_gr])
+            delta = sum([gr for gr in delta_gr])
+
+        return delta, summary_rate
+
     for model in models:
         # получить все данные таблицs
         model_data = model.objects.all()
         content_type = ContentType.objects.get_for_model(model)
         for obj in model_data:
+            delta, summary_rate = get_rates_2(obj)
+            # old_rate, summary_rate = get_rates(obj, old_leaders)
             LeaderData.objects.create(content_type=content_type, object_id=obj.pk,
-                                      leader_object=obj, position_delta=0).save()
+                                      leader_object=obj, position_delta=delta, rate=summary_rate).save()
 
-
-    # получить старую таблицу, получить прирост для всех полей
-    # сохрантиь
 
     logger.info('update_leadtable_task end')
 
@@ -283,8 +429,15 @@ def save_grading_data(request):
         cadets = list(Cadet.objects.filter(departament_id=data['departamentId']).values('id'))
         exercise_id = data['exerciseId']
         uniform_type_id = data['uniformId']
+        course_id = Cadet.objects.get(id=cadets[0]['id']).course_id
+        exercise_standard = get_object_or_404(ExerciseStandard, course=course_id, exercise=exercise_id, uniform_type=uniform_type_id)
         # Проходим по всем данным и сохраняем их в базу данных
         for ind, item in enumerate(data['results']):
+            rate = None
+            if item['result'] != '':
+                rate = calculate_points(int(item['result']), exercise_standard.value_satisfactory,
+                                        exercise_standard.value_great, exercise_standard.koef_down_great,
+                                        exercise_standard.koef_up_great)
             Grading.objects.create(
                 student_id=cadets[ind]['id'],
                 exercise_id=exercise_id,
@@ -292,7 +445,8 @@ def save_grading_data(request):
                 absence_reason_id=item['absenceId'] if item['absenceId'] != '' else None,
                 result=int(item['result']) if item['result'] != '' else None,
                 datetime=pytz.timezone('UTC').localize(datetime.strptime(
-                    f"{item['date']} {datetime.now().time().strftime('%H:%M:%S')}", "%Y-%m-%d %H:%M:%S"))
+                    f"{item['date']} {datetime.now().time().strftime('%H:%M:%S')}", "%Y-%m-%d %H:%M:%S")),
+                rate=rate
             )
         messages.success(request, 'Сохранение прошло успешно!')
         # запуск задачи на обновление таблицы лидеров
@@ -304,6 +458,7 @@ def save_grading_data(request):
                 background_thread.start()
         return JsonResponse({'success': True})
     except Exception as e:
+        logger.error(f'Произошла ошибка при сохранинии. {e}')
         messages.error(request, 'Произошла ошибка при сохранинии.')
         return JsonResponse({'success': False, 'error': str(e)})
 
@@ -361,6 +516,173 @@ def delete_group(request, pk):
     get_article.delete()
 
     return redirect('app:edit_groups')
+
+# edit learn subjects
+
+# platoons
+@login_required
+def edit_platoons(request):
+    success = False
+    if request.method == 'POST':
+        form = EditPlatoonForm(request.POST)
+        if form.is_valid():
+            form.save()
+            success = True
+
+    context = {
+        'departaments': Platoon.objects.all().order_by('-id'),
+        'form': EditPlatoonForm(),
+        'success': success
+    }
+    return render(request, 'edit_platoons.html', context)
+
+
+@login_required
+def update_platoon(request, pk):
+    success_update = False
+    get_group = get_object_or_404(Platoon, pk=pk)
+    if request.method == 'POST':
+        form = EditPlatoonForm(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+        else:
+            # Form is not valid, include it in the context for displaying errors
+            context = {
+                'get_group': get_group,
+                'update': True,
+                'form': form,  # Pass the form with errors to the context
+                'success_update': success_update
+            }
+            return render(request, 'edit_platoons.html', context)
+
+    context = {
+        'get_group': get_group,
+        'update': True,
+        'form': EditPlatoonForm(instance=get_group),
+        'success_update': success_update
+    }
+
+    return render(request, 'edit_platoons.html', context)
+
+
+@login_required
+def delete_platoon(request, pk):
+    get_article = get_object_or_404(Platoon, pk=pk)
+    get_article.delete()
+
+    return redirect('app:edit_platoons')
+
+
+# companies
+@login_required
+def edit_companies(request):
+    success = False
+    if request.method == 'POST':
+        form = EditCompanyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            success = True
+
+    context = {
+        'departaments': Company.objects.all().order_by('-id'),
+        'form': EditCompanyForm(),
+        'success': success
+    }
+    return render(request, 'edit_companies.html', context)
+
+
+@login_required
+def update_company(request, pk):
+    success_update = False
+    get_group = get_object_or_404(Company, pk=pk)
+    if request.method == 'POST':
+        form = EditCompanyForm(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+        else:
+            # Form is not valid, include it in the context for displaying errors
+            context = {
+                'get_group': get_group,
+                'update': True,
+                'form': form,  # Pass the form with errors to the context
+                'success_update': success_update
+            }
+            return render(request, 'edit_companies.html', context)
+
+    context = {
+        'get_group': get_group,
+        'update': True,
+        'form': EditCompanyForm(instance=get_group),
+        'success_update': success_update
+    }
+
+    return render(request, 'edit_companies.html', context)
+
+
+@login_required
+def delete_company(request, pk):
+    get_article = get_object_or_404(Company, pk=pk)
+    get_article.delete()
+
+    return redirect('app:edit_companies')
+
+
+# faculty
+@login_required
+def edit_faculty(request):
+    success = False
+    if request.method == 'POST':
+        form = EditFacultyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            success = True
+
+    context = {
+        'departaments': Faculty.objects.all().order_by('-id'),
+        'form': EditFacultyForm(),
+        'success': success
+    }
+    return render(request, 'edit_faculty.html', context)
+
+
+@login_required
+def update_faculty(request, pk):
+    success_update = False
+    get_group = get_object_or_404(Faculty, pk=pk)
+    if request.method == 'POST':
+        form = EditFacultyForm(request.POST, instance=get_group)
+        if form.is_valid():
+            form.save()
+            success_update = True
+        else:
+            # Form is not valid, include it in the context for displaying errors
+            context = {
+                'get_group': get_group,
+                'update': True,
+                'form': form,  # Pass the form with errors to the context
+                'success_update': success_update
+            }
+            return render(request, 'edit_faculty.html', context)
+
+    context = {
+        'get_group': get_group,
+        'update': True,
+        'form': EditFacultyForm(instance=get_group),
+        'success_update': success_update
+    }
+
+    return render(request, 'edit_faculty.html', context)
+
+
+@login_required
+def delete_faculty(request, pk):
+    get_article = get_object_or_404(Faculty, pk=pk)
+    get_article.delete()
+
+    return redirect('app:edit_faculty')
+
 
 
 # edit user page
@@ -561,23 +883,45 @@ def update_object(request, obj, pk):
 
     return render(request, 'editing_page.html', context)
 
+def get_name(grade, model):
+    return str(model.objects.get(pk=grade.object_id))
+
+def get_top_10(model):
+    content_type = ContentType.objects.get_for_model(model)
+    top_10_records = LeaderData.objects.order_by('-position_delta').filter(content_type=content_type)[:10]
+    data = []
+    pks = []
+    i = 1
+    for note in top_10_records:
+        data.append([i, note.position_delta, note.rate, get_name(note, model)])
+        pks.append(note.object_id)
+        i += 1
+    return data, pks
+
+def get_leaderboards(request):
+    cadets, pks = get_top_10(Cadet)
+    f, _ = get_top_10(Faculty)
+    c, _ = get_top_10(Company)
+    p, _ = get_top_10(Platoon)
+    d, _ = get_top_10(Departament)
+    data = {
+        "table-fcl": f,
+        "table-cmp": c,
+        "table-plt": p,
+        "table-dep": d,
+        "table-cadet": cadets,
+        "cadets_pk": pks
+    }
+    return JsonResponse(data)
 
 
-# from django.http import JsonResponse
-# from django.shortcuts import render
-# from django.views.decorators.csrf import csrf_exempt
-#
-# from .tasks import demo_task
-# demo_task("wqw", repeat=60)
-# @csrf_exempt
-# def tasks(request):
-#     if request.method == 'POST':
-#         return _post_tasks(request)
-#     else:
-#         return JsonResponse({}, status=405)
-#
-# def _post_tasks(request):
-#     message = request.POST['message']
-#     logger.debug('calling demo_task. message={0}'.format(message))
-#     demo_task(message)
-#     return JsonResponse({}, status=302)
+def get_user_data(request, pk):
+    user_data = get_object_or_404(Cadet, pk=pk)
+    data = {
+        'full_name': str(user_data),
+        'rank': str(user_data.rank),
+        'departament': str(user_data.departament),
+        'course': str(user_data.course),
+        'photo_url': '/static/img/author.jpg'
+    }
+    return JsonResponse(data)

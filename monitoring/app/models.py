@@ -111,9 +111,13 @@ class ExerciseStandard(models.Model):
     value_satisfactory = models.FloatField(default=0)
     value_fine = models.FloatField(default=0)
     value_great = models.FloatField(default=0)
+    koef_down_great = models.FloatField(default=1)
+    koef_up_great = models.FloatField(default=0.01)
 
     def __str__(self):
-        return f"{self.exercise} - {self.course.name} - {self.value_satisfactory}:{self.value_fine}:{self.value_great} - {self.description} "
+        return f"{self.exercise} - {self.course.name} - {self.uniform_type} -" \
+               f" {self.value_satisfactory}:{self.value_fine}:{self.value_great} - " \
+               f"{self.koef_down_great}:{self.koef_up_great} - {self.description}"
 
 
 class AbsenceReason(models.Model):
@@ -132,6 +136,7 @@ class Grading(models.Model):
     absence_reason = models.ForeignKey(AbsenceReason, on_delete=models.SET_NULL, null=True, blank=True)
     result = models.FloatField(blank=True, null=True)
     datetime = models.DateTimeField(auto_now_add=False)
+    rate = models.IntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return f"{self.student} - {self.exercise} - {self.uniform_type} - " \
@@ -152,3 +157,4 @@ class LeaderData(models.Model):
     object_id = models.PositiveIntegerField()
     leader_object = GenericForeignKey('content_type', 'object_id')
     position_delta = models.IntegerField(default=0)
+    rate = models.IntegerField(default=0)
