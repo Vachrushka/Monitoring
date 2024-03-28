@@ -4,8 +4,11 @@ from .views import index, login_view, control, author, test_page, add_results, e
     update_group, delete_group, delete_user, update_user, editing_page, get_editing_table, save_new_obj, delete_object,\
     update_object, get_leaderboards, get_user_data
 from .views import edit_platoons, update_platoon, delete_platoon, edit_companies, update_company, delete_company,\
-    edit_faculty, update_faculty, delete_faculty
+    edit_faculty, update_faculty, delete_faculty, report
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 app_name = 'app'
 
@@ -52,5 +55,10 @@ urlpatterns = [
     path('save_grading_data/', save_grading_data, name='save_grading_data'),
 
     path('get_leaderboards/', get_leaderboards, name='get_leaderboards'),
-    path('get_user_data/<int:pk>/', get_user_data, name='get_user_data')
+    path('get_user_data/<int:pk>/', get_user_data, name='get_user_data'),
+
+    path('report/', report, name='report'),
+
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -8,7 +8,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.template.loader import render_to_string
 from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbsenceForm, SetCadetResultForm, \
-    SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm, EditPlatoonForm, EditCompanyForm, EditFacultyForm
+    SetUniformForm, EditDepartamentForm, EditCadetForm, FilterForm, EditPlatoonForm, EditCompanyForm, EditFacultyForm, \
+    FilterFormLoadFile
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category,\
@@ -20,7 +21,7 @@ import logging
 import json
 from datetime import datetime, timedelta
 import pytz
-from .utils import calculate_points
+from .utils import calculate_points, get_excel_io
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,6 @@ def control(request):
             return render(request, 'control.html', context)
     else:
         form = FilterForm()
-
     return render(request, 'control.html', {'user_authenticated': request.user.is_authenticated, 'form': form})
 
 
@@ -437,7 +437,7 @@ def save_grading_data(request):
             if item['result'] != '':
                 rate = calculate_points(int(item['result']), exercise_standard.value_satisfactory,
                                         exercise_standard.value_great, exercise_standard.koef_down_great,
-                                        exercise_standard.koef_up_great)
+                                        exercise_standard.koef_up_great, exercise_standard.reverse)
             Grading.objects.create(
                 student_id=cadets[ind]['id'],
                 exercise_id=exercise_id,
@@ -713,13 +713,17 @@ def edit_users(request):
     return render(request, 'edit_users.html', context)
 
 
+def handle_uploaded_file(f):
+    with open(f'media/profile_pics/f.name', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
 @login_required
 def update_user(request, pk):
     success_update = False
     get_group = get_object_or_404(Cadet, pk=pk)
-    # get_group = Departament.objects.get(pk=pk)
     if request.method == 'POST':
-        form = EditCadetForm(request.POST, instance=get_group)
+        form = EditCadetForm(request.POST, request.FILES, instance=get_group)
         if form.is_valid():
             form.save()
             success_update = True
@@ -917,11 +921,51 @@ def get_leaderboards(request):
 
 def get_user_data(request, pk):
     user_data = get_object_or_404(Cadet, pk=pk)
+    if not str(user_data.photo):
+        path = "static/img/author.jpg"
+    elif "static" not in str(user_data.photo):
+        path = 'media/' + str(user_data.photo)
+    else:
+        path = str(user_data.photo)
+
     data = {
         'full_name': str(user_data),
         'rank': str(user_data.rank),
         'departament': str(user_data.departament),
         'course': str(user_data.course),
-        'photo_url': '/static/img/author.jpg'
+        'photo_url': path
     }
     return JsonResponse(data)
+
+
+from django.http import HttpResponse
+from urllib.parse import quote
+@login_required
+def report(request):
+    if request.method == 'POST':
+        form = FilterFormLoadFile(request.POST)
+        # обработка
+        if form.is_valid():
+            # Обработка данных формы
+            name = form.cleaned_data['name']
+            cadet_pk = request.POST.get('name_hidden')
+            category_pk = form.cleaned_data['discipline']
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            student = None
+            if cadet_pk != '':
+                student = get_object_or_404(Cadet, pk=cadet_pk)
+
+            excel_io = get_excel_io([])
+            response = HttpResponse(excel_io.read(),
+                                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            filename = quote(f"Отчет: {name} - {str(start_date)} - {str(end_date)}.xlsx")
+            response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+            return response
+    else:
+        form = FilterFormLoadFile()
+
+
+    return render(request, 'report.html', {'user_authenticated': request.user.is_authenticated, 'form': form})
+

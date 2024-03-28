@@ -141,7 +141,8 @@ class EditCadetForm(forms.ModelForm):
             "patronymic": "Отчество",
             "rank": "Звание",
             "departament": "Отделение",
-            "course": "Курс"
+            "course": "Курс",
+            "photo": "Фотография"
         }
 
     def __init__(self, *args, **kwargs):
@@ -156,9 +157,28 @@ class FilterForm(forms.Form):
     # Создаем список кортежей в формате ('значение', 'отображаемое_название')
     category_choices = [(category.id, category.name) for category in categories]
 
-
     name = forms.CharField(required=True, label='ФИО',
                            widget=forms.TextInput(attrs={'class': 'form-control mr-2', 'placeholder': 'Начните вводить имя'}),
+                           error_messages={'required': 'Пожалуйста, заполните поле "ФИО".'})
+    discipline = forms.ChoiceField(
+        choices=category_choices,
+        label='Дисциплина',
+        widget=forms.Select(attrs={'class': 'form-control mr-2'})
+    )
+    start_date = forms.DateField(label='Время (с)',
+                                 widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mr-2'}))
+    end_date = forms.DateField(label='Время (по)',
+                               widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control mr-2'}))
+
+
+class FilterFormLoadFile(forms.Form):
+    categories = Category.objects.all()
+    category_choices = [(category.id, category.name) for category in categories]
+    category_choices.insert(0, ('all', 'Все'))
+
+    name = forms.CharField(required=True, label='ФИО',
+                           widget=forms.TextInput(
+                               attrs={'class': 'form-control mr-2', 'placeholder': 'Начните вводить имя'}),
                            error_messages={'required': 'Пожалуйста, заполните поле "ФИО".'})
     discipline = forms.ChoiceField(
         choices=category_choices,

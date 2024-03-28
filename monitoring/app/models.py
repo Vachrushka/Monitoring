@@ -64,21 +64,13 @@ class Cadet(models.Model):
     patronymic = models.CharField(max_length=255, verbose_name='Отчество')
     # photo = models.ImageField(upload_to='learner_photos/', null=True, blank=True)
     rank = models.ForeignKey(Rank, on_delete=models.PROTECT, verbose_name='Звание')
-
     # Информация о курсе обучения
     course = models.ForeignKey(Course, on_delete=models.PROTECT, verbose_name='Курс')
     departament = models.ForeignKey(Departament, on_delete=models.PROTECT, verbose_name='Отделение')
+    photo = models.ImageField(upload_to='profile_pics/', default='static/img/author.jpg', null=True, blank=True, verbose_name='Фотография')
 
     def __str__(self):
         return f'{self.surname} {self.name} {self.patronymic}'
-
-
-# class CadetProfile(models.Model):
-#     user = models.OneToOneField(Cadet, on_delete=models.CASCADE)
-#     profile_picture = models.ImageField(upload_to='profile_pics/', default='img/author.jpg', blank=True)
-#
-#     def str(self):
-#         return self.user.name
 
 
 # excercise
@@ -103,6 +95,13 @@ class Uniforms(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+class UnitType(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class ExerciseStandard(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
@@ -113,11 +112,13 @@ class ExerciseStandard(models.Model):
     value_great = models.FloatField(default=0)
     koef_down_great = models.FloatField(default=1)
     koef_up_great = models.FloatField(default=0.01)
+    reverse = models.BooleanField(default=False)
+    unit_type = models.ForeignKey(UnitType, default=0, on_delete=models.PROTECT)
 
     def __str__(self):
         return f"{self.exercise} - {self.course.name} - {self.uniform_type} -" \
                f" {self.value_satisfactory}:{self.value_fine}:{self.value_great} - " \
-               f"{self.koef_down_great}:{self.koef_up_great} - {self.description}"
+               f"{self.koef_down_great}:{self.koef_up_great}:{self.reverse}:{self.unit_type} - {self.description}"
 
 
 class AbsenceReason(models.Model):

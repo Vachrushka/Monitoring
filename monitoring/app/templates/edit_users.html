@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block title %}Edit users Page{% endblock %}
-
 {% block content %}
 <div class="container">
     <div class="row">
@@ -22,10 +21,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-
+                    {% if form.instance.photo %}
+                        <img src="{{ form.instance.photo.url }}" class="img-fluid" alt="Current Photo" style="border: 2px solid #000;">
+                    {% else %}
+                        <img src="/static/img/author.jpg" class="img-fluid" alt="Current Photo" style="border: 2px solid #000;">
+                    {% endif %}
                 </div>
                 <div class="col-md-8">
-                    <form id="update_data" method="post">
+                    <form id="update_data" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{form}}
                     </form>
