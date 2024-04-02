@@ -940,6 +940,26 @@ def get_user_data(request, pk):
 
 from django.http import HttpResponse
 from urllib.parse import quote
+
+def get_grade_data(student, category_pk, start_date, end_date):
+    if category_pk == 'all':
+        categories = Category.objects.all()
+    else:
+        categories = [get_object_or_404(Category, pk=category_pk)]
+
+    result = {}
+    for cat in categories:
+        exercises = Exercise.objects.filter(category_id=cat.id)
+
+        excercise_dict = {}
+        for ex in exercises:
+            grades = Grading.objects.filter(student=student.id, exercise=ex.id,
+                                            datetime__gte=start_date,
+                                            datetime__lte=end_date)
+            excercise_dict[ex] = grades
+        result[cat] = excercise_dict
+
+    return result
 @login_required
 def report(request):
     if request.method == 'POST':
@@ -957,7 +977,8 @@ def report(request):
             if cadet_pk != '':
                 student = get_object_or_404(Cadet, pk=cadet_pk)
 
-            excel_io = get_excel_io([])
+            data = get_grade_data(student, category_pk, start_date, end_date)
+            excel_io = get_excel_io(student, start_date, end_date, data)
             response = HttpResponse(excel_io.read(),
                                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             filename = quote(f"Отчет: {name} - {str(start_date)} - {str(end_date)}.xlsx")
