@@ -3,6 +3,118 @@
 {% block title %}Control Page{% endblock %}
 
 {% block content %}
-    <h2>Welcome to the Control Page</h2>
-    <!-- Остальное содержимое страницы -->
+<div class="container mt-5 text-center">
+    <h2 class="mb-4">Контроль результатов</h2>
+
+    <!-- Filters -->
+    <form class="form-inline mb-4 text-center" method="post" action="{% url 'app:control' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" id="id_name_hidden" name="name_hidden">
+    <button type="submit" class="btn btn-primary mt-2">Применить</button>
+    </form>
+</div>
+
+
+<div class="container text-center">
+    {% if datas %}
+        {% for d in datas %}
+        <h6 class="mb-4">{{ d.exercise_name }}</h6>
+        <div class="row">
+            <canvas id="myChartScatter{{ forloop.counter }}"></canvas>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Данных по заданному имени не найдено.</p>
+    {% endif %}
+</div>
+
+{% for d in datas %}
+    <script>
+        var ctx{{ forloop.counter }} = document.getElementById('myChartScatter{{ forloop.counter }}').getContext('2d');
+        var myChart{{ forloop.counter }} = new Chart(ctx{{ forloop.counter }}, {
+            type: 'line',
+            data: {
+                datasets: [
+                    {% for table in d.data %}
+                    {
+                        label: '{{table.uniform_name}}',
+                        data: [
+                                {% for res in table.data %}
+                                    {x: '{{res.x}}', y: {{res.y}}},
+                                {% endfor %}
+                            ],
+                    },
+                    {% endfor %}
+                ]
+            },
+            options: {
+              plugins: {
+                title: {
+                  text: '{{ d.exercise_name }}',
+                  display: false
+                }
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    unit: 'day'
+                  },
+                  title: {
+                    display: true,
+                    text: 'Дата'
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: 'Значение'
+                  }
+                }
+              }
+            },
+        });
+    </script>
+{% endfor %}
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Получаем элементы по ID
+    var endDateInput = document.getElementById('id_end_date');
+    var startDateInput = document.getElementById('id_start_date');
+
+    // Проверяем наличие элементов и отсутствие значений
+    if (endDateInput && !endDateInput.value) {
+      var currentDate = new Date();
+      // Устанавливаем значение только в случае отсутствия текущего значения
+      endDateInput.value = currentDate.toISOString().split('T')[0];
+    }
+
+    if (startDateInput && !startDateInput.value) {
+      var currentDate = new Date();
+      var startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      // Устанавливаем значение только в случае отсутствия текущего значения
+      startDateInput.value = startDate.toISOString().split('T')[0];
+    }
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+<script>
+    $(function() {
+        $("#id_name").autocomplete({
+            source: '{% url 'app:control' %}',
+            minLength: 2,
+            select: function(event, ui) {
+                event.preventDefault();
+                $("#id_name").val(ui.item.label);
+                $("#id_name_hidden").val(ui.item.value); // Скрытое поле для хранения cadet.pk
+            }
+        }).autocomplete("widget").addClass("custom-bootstrap-autocomplete");
+    });
+</script>
 {% endblock %}

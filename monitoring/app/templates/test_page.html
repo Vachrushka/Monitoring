@@ -1,5 +1,200 @@
-{% extends 'index.html' %}  <!-- Если у вас есть базовый шаблон -->
+{% extends 'base.html' %}
+
+{% block title %}Edititing page{% endblock %}
 
 {% block content %}
-    <h2>Test</h2>
+<div class="container">
+    <div class="row">
+        {% if success %}
+            <div class="alert alert-success" role="alert">
+                Запись добавлена
+            </div>
+        {% endif %}
+        {% if success_update %}
+            <div class="alert alert-success" role="alert">
+                Данные обновлены
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <h2 class="mt-4 text-center">Редактирование данных</h2>
+        {% if update %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+
+                </div>
+                <div class="col-md-8">
+                    <form id="update_data" method="post">
+                    {% csrf_token %}
+                    {{form}}
+                    </form>
+
+                    <button form="update_data" type="submit" class="btn btn-primary mt-5">Обновить</button>
+                    <a href="/edit_users/" class="btn btn-secondary mt-5">Назад</a>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <form method="post" action="">
+            {% csrf_token %}
+            <label for="id_model_name">Choose a model:</label>
+            <select name="model_name" id="id_model_name">
+                <option value="Cadet">Cadet</option>
+                <option value="Departament">Departament</option>
+                <!-- Добавьте другие модели по необходимости -->
+            </select>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="data-container">
+            <!-- Здесь будет отображаться таблица с данными -->
+            {% include 'partial_data.html' %}
+        </div>
+<!--        {% if data %}-->
+<!--            <table>-->
+<!--                    <thead>-->
+<!--                        <tr>-->
+<!--                            &lt;!&ndash; Заголовки таблицы, замените на ваши поля моделей &ndash;&gt;-->
+<!--                            <th>ID</th>-->
+<!--                            <th>Name</th>-->
+<!--                            <th>Department</th>-->
+<!--                            &lt;!&ndash; Добавьте другие заголовки по необходимости &ndash;&gt;-->
+<!--                        </tr>-->
+<!--                    </thead>-->
+<!--                    <tbody>-->
+<!--                        {% for obj in data %}-->
+<!--                            <tr>-->
+<!--                                &lt;!&ndash; Значения полей объектов моделей &ndash;&gt;-->
+<!--                                <td>{{ obj.id }}</td>-->
+<!--                                <td>{{ obj.name }}</td>-->
+<!--                                <td>{{ obj.department.name }}</td> &lt;!&ndash; Пример, замените на ваши поля &ndash;&gt;-->
+<!--                                &lt;!&ndash; Добавьте другие значения полей по необходимости &ndash;&gt;-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+{% endif %}
+
+<!--        <form method="get" action="">-->
+<!--            <div class="text-center mt-4">-->
+<!--                <select class="form-control" id="">-->
+<!--                    <option value="Cadet">Кадеты</option>-->
+<!--                    <option value="Departament">Отделения</option>-->
+<!--                    <option value="Platoon">Взводы</option>-->
+<!--                    <option value="Company">Роты</option>-->
+<!--                    <option value="Faculty">Факультеты</option>-->
+<!--                </select>-->
+<!--                <input type="text" name="search" placeholder="Поиск" value="{{ search_term }}">-->
+<!--                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>-->
+<!--                <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">-->
+<!--                  Добавить нового курсанта-->
+<!--                </button>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--        <table class="table table-bordered mt-4">-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                  <th scope="col">id</th>-->
+<!--                  <th scope="col">ФИО</th>-->
+<!--                  <th scope="col">Звание</th>-->
+<!--                  <th scope="col">Курс</th>-->
+<!--                  <th scope="col">Отделение</th>-->
+<!--                  <th scope="col" style="width: 50px;">Действие</th>-->
+<!--                </tr>-->
+<!--              </thead>-->
+<!--                <tbody>-->
+<!--            {% for i in departaments %}-->
+<!--            <tr>-->
+<!--              <th>{{i.id}}</th>-->
+<!--              <td>{{i.surname}} {{i.name}} {{i.patronymic}}</td>-->
+<!--              <td>{{i.rank}}</td>-->
+<!--              <td>{{i.course}}</td>-->
+<!--              <td>{{i.departament}}</td>-->
+<!--              <td scope="col">-->
+<!--                  <div class="container">-->
+<!--                      <div class="row">-->
+<!--                            <div class="col-md-6">-->
+<!--                                <a href="{% url 'app:update_user' i.id %}"><i class="fas fa-pencil-alt"></i></a>-->
+<!--                            </div>-->
+<!--                            <div class="col-md-6">-->
+<!--                                <a href="{% url 'app:delete_user' i.id %}"><i class="fas fa-trash"></i></a>-->
+<!--                            </div>-->
+<!--                      </div>-->
+<!--                  </div>-->
+<!--              </td>-->
+<!--            </tr>-->
+<!--            {% endfor %}-->
+<!--            </tbody>-->
+<!--            </table>-->
+        {% endif %}
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Новое отделение</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form id="add_form" method="post">
+                    {% csrf_token %}
+                    {{form}}
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button form="add_form" type="submit" class="btn btn-primary">Добавить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateForms(formName) {
+        var modelSelect = document.getElementById('id_model_name');
+        modelSelect.innerHTML = '';
+
+        if (categoryId) {
+            fetch(`/get_exercises_for_category/${categoryId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    data.exercises.forEach(exercise => {
+                        var option = document.createElement('option');
+                        option.value = exercise.id;
+                        option.text = exercise.name;
+                        exerciseSelect.appendChild(option);
+                    });
+                });
+        }
+    }
+
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--    var nameSelect = document.getElementById('id_category');-->
+
+<!--    if (nameSelect && exerciseForm) {-->
+<!--        // Инициализация при загрузке страницы-->
+<!--        updateForms(nameSelect.value);-->
+
+<!--        // Обработчики событий-->
+<!--        nameSelect.addEventListener('change', function() {-->
+<!--            updateForms(this.value);-->
+<!--        });-->
+<!--    });-->
+
+    document.getElementById('id_model_name').addEventListener('change', function() {
+        var modelName = this.value;
+        fetch('/editing_page/?model_name=' + modelName)
+        .then(response => response.json())  // Предполагается, что сервер возвращает JSON
+        .then(data => {
+            document.getElementById('form-container').innerHTML = data.html_form;
+            document.getElementById('data-container').innerHTML = data.html_data;
+        });
+    });
+</script>
 {% endblock %}

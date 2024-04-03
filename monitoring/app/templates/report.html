@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Page{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2 class="mb-4">Генерация отчета</h2>
+
+    <!-- Filters -->
+    <form class="form-inline mb-4 text-center" method="post" action="{% url 'app:report' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" id="id_name_hidden" name="name_hidden">
+    <button type="submit" class="btn btn-primary mt-2">Сгенерировать</button>
+    </form>
+</div>
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Получаем элементы по ID
+    var endDateInput = document.getElementById('id_end_date');
+    var startDateInput = document.getElementById('id_start_date');
+
+    // Проверяем наличие элементов и отсутствие значений
+    if (endDateInput && !endDateInput.value) {
+      var currentDate = new Date();
+      // Устанавливаем значение только в случае отсутствия текущего значения
+      endDateInput.value = currentDate.toISOString().split('T')[0];
+    }
+
+    if (startDateInput && !startDateInput.value) {
+      var currentDate = new Date();
+      var startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      // Устанавливаем значение только в случае отсутствия текущего значения
+      startDateInput.value = startDate.toISOString().split('T')[0];
+    }
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+<script>
+    $(function() {
+        $("#id_name").autocomplete({
+            source: '{% url 'app:control' %}',
+            minLength: 2,
+            select: function(event, ui) {
+                event.preventDefault();
+                $("#id_name").val(ui.item.label);
+                $("#id_name_hidden").val(ui.item.value); // Скрытое поле для хранения cadet.pk
+            }
+        }).autocomplete("widget").addClass("custom-bootstrap-autocomplete");
+    });
+</script>
+{% endblock %}

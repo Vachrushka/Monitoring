@@ -3,12 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 .idea
-*.min.css*
 # C extensions
 *.so
 
 # Distribution / packaging
 .Python
+profile_pics/
 build/
 develop-eggs/
 dist/

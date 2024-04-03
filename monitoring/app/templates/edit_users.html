@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit users Page{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        {% if success %}
+            <div class="alert alert-success" role="alert">
+                Курсант добавлен
+            </div>
+        {% endif %}
+        {% if success_update %}
+            <div class="alert alert-success" role="alert">
+                Данные обновлены
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <h2 class="mt-4 text-center">Редактирование данных</h2>
+        {% if update %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if form.instance.photo %}
+                        <img src="{{ form.instance.photo.url }}" class="img-fluid" alt="Current Photo" style="border: 2px solid #000;">
+                    {% else %}
+                        <img src="/static/img/author.jpg" class="img-fluid" alt="Current Photo" style="border: 2px solid #000;">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <form id="update_data" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form}}
+                    </form>
+
+                    <button form="update_data" type="submit" class="btn btn-primary mt-5">Обновить</button>
+                    <a href="/edit_users/" class="btn btn-secondary mt-5">Назад</a>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <form method="get" action="">
+            <div class="text-center mt-4">
+                <input type="text" name="search" placeholder="Поиск" value="{{ search_term }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                <button type="button" class="btn btn-primary ml-3" data-toggle="modal" data-target="#exampleModal">
+                  Добавить нового курсанта
+                </button>
+            </div>
+        </form>
+        <table class="table table-bordered mt-4">
+                <thead>
+                <tr>
+                  <th scope="col">id</th>
+                  <th scope="col">ФИО</th>
+                  <th scope="col">Звание</th>
+                  <th scope="col">Курс</th>
+                  <th scope="col">Отделение</th>
+                  <th scope="col" style="width: 50px;">Действие</th>
+                </tr>
+              </thead>
+                <tbody>
+            {% for i in departaments %}
+            <tr>
+              <th>{{i.id}}</th>
+              <td>{{i.surname}} {{i.name}} {{i.patronymic}}</td>
+              <td>{{i.rank}}</td>
+              <td>{{i.course}}</td>
+              <td>{{i.departament}}</td>
+              <td scope="col">
+                  <div class="container">
+                      <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'app:update_user' i.id %}"><i class="fas fa-pencil-alt"></i></a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'app:delete_user' i.id %}"><i class="fas fa-trash"></i></a>
+                            </div>
+                      </div>
+                  </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        {% endif %}
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Новое отделение</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="add_form" method="post">
+                        {% csrf_token %}
+                        {{form}}
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button form="add_form" type="submit" class="btn btn-primary">Добавить</button>
+                  </div>
+                </div>
+              </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

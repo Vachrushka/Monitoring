@@ -1,8 +1,20 @@
 {% extends 'base.html' %}
 
 {% block title %}Author Page{% endblock %}
-
+{% load static %}
 {% block content %}
-    <h2>Welcome to the Author Page</h2>
-    <!-- Остальное содержимое страницы -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="{% static 'img/author.jpg' %}" alt="Author Photo" class="img-fluid rounded">
+        </div>
+        <div class="col-md-8">
+            <h2 class="mb-4">Кручинина Кристина Сергеевна</h2>
+            <p class="lead">Biography:</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vel justo a purus mattis euismod sed a sem.</p>
+            <p class="lead">Description:</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vel justo a purus mattis euismod sed a sem.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
