@@ -111,22 +111,22 @@ def get_excel_io(student, start_date, end_date, data):
     for key, v in widths.items():
         sh.column_dimensions[key].width = 0.17*v
 
-    data = Reference(sh, min_col=7, min_row=3, max_col=15, max_row=4)
-    c2 = LineChart()
-    c2.title = "Date Axis"
-    c2.style = 12
-    c2.y_axis.title = "Size"
-    c2.y_axis.crossAx = 500
-    c2.x_axis = DateAxis(crossAx=100)
-    c2.x_axis.number_format = 'd-mmm'
-    c2.x_axis.majorTimeUnit = "days"
-    c2.x_axis.title = "Date"
-
-    c2.add_data(data, titles_from_data=True)
-    # dates = Reference(sh, min_col=7, min_row=3, max_col=15)
-    # c2.set_categories(dates)
-
-    sh.add_chart(c2, "A61")
+    # data = Reference(sh, min_col=7, min_row=3, max_col=15, max_row=4)
+    # c2 = LineChart()
+    # c2.title = "Date Axis"
+    # c2.style = 12
+    # c2.y_axis.title = "Size"
+    # c2.y_axis.crossAx = 500
+    # c2.x_axis = DateAxis(crossAx=100)
+    # c2.x_axis.number_format = 'd-mmm'
+    # c2.x_axis.majorTimeUnit = "days"
+    # c2.x_axis.title = "Date"
+    #
+    # c2.add_data(data, titles_from_data=True)
+    # # dates = Reference(sh, min_col=7, min_row=3, max_col=15)
+    # # c2.set_categories(dates)
+    #
+    # sh.add_chart(c2, "A61")
 
     buffer = BytesIO()
     book.save(buffer)
