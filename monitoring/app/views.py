@@ -12,8 +12,8 @@ from .forms import SetCategoryForm, SetExerciseForm, SetDepartamentForm, SetAbse
     FilterFormLoadFile
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
-from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category,\
-    Course, Faculty,Company,Platoon,LeaderData
+from .models import Exercise, ExerciseStandard, Departament, Cadet, Uniforms, Grading, Category, \
+    Course, Faculty, Company, Platoon, LeaderData
 from django.http import JsonResponse
 from django.views import View
 from django import forms
@@ -66,7 +66,7 @@ def control(request):
                 if len(name_parts) == 3:
                     surname, name, patronymic = name_parts
                     try:
-                    # Используем запрос к базе данных для поиска студента
+                        # Используем запрос к базе данных для поиска студента
                         student = Cadet.objects.get(name=name, surname=surname, patronymic=patronymic)
                     except Cadet.DoesNotExist:
                         context = {
@@ -113,12 +113,11 @@ def control(request):
 
                     data.append(uniform_data)
 
-                #data, labels = get_filled_data(data)
-                #table_data['labels'] = labels
+                # data, labels = get_filled_data(data)
+                # table_data['labels'] = labels
                 table_data['data'] = data
 
                 datas.append(table_data)
-
 
             # После обработки данных, вы можете передать их в контекст шаблона
             context = {
@@ -247,11 +246,14 @@ def get_cadets_from_dep(request, departament_id):
     cadets = Cadet.objects.filter(departament_id=departament_id).values('id', 'name', "surname", "patronymic")
     return JsonResponse({'exercises': list(cadets)})
 
+
 import threading
 from django.shortcuts import render
 import time
 
 lock = threading.Lock()
+
+
 def update_leadtable_task():
     logger.info('update_leadtable_task started')
 
@@ -272,7 +274,8 @@ def update_leadtable_task():
         delta = 0
         for ex in excercises:
             for form in form_type:
-                latest_grading = Grading.objects.filter(uniform_type=form.id, student_id=cadet.id, exercise_id=ex.id, rate__isnull=False).order_by('-datetime')[:2]
+                latest_grading = Grading.objects.filter(uniform_type=form.id, student_id=cadet.id, exercise_id=ex.id,
+                                                        rate__isnull=False).order_by('-datetime')[:2]
                 if len(latest_grading) == 1:
                     summary_rate += latest_grading[0].rate
                 elif len(latest_grading) == 2:
@@ -280,8 +283,8 @@ def update_leadtable_task():
                     delta += latest_grading[0].rate - latest_grading[1].rate
 
         res = LeaderData.objects.create(content_type=content_type, object_id=cadet.pk,
-                                  leader_object=cadet, position_delta=delta,
-                                  rate=summary_rate)
+                                        leader_object=cadet, position_delta=delta,
+                                        rate=summary_rate)
         new_result_cadets.append(res)
         res.save()
 
@@ -416,7 +419,6 @@ def update_leadtable_task():
             LeaderData.objects.create(content_type=content_type, object_id=obj.pk,
                                       leader_object=obj, position_delta=delta, rate=summary_rate).save()
 
-
     logger.info('update_leadtable_task end')
 
 
@@ -430,7 +432,10 @@ def save_grading_data(request):
         exercise_id = data['exerciseId']
         uniform_type_id = data['uniformId']
         course_id = Cadet.objects.get(id=cadets[0]['id']).course_id
-        exercise_standard = get_object_or_404(ExerciseStandard, course=course_id, exercise=exercise_id, uniform_type=uniform_type_id)
+        if course_id >= 4:
+            course_id = 3
+        exercise_standard = get_object_or_404(ExerciseStandard, course=course_id, exercise=exercise_id,
+                                              uniform_type=uniform_type_id)
         # Проходим по всем данным и сохраняем их в базу данных
         for ind, item in enumerate(data['results']):
             rate = None
@@ -516,6 +521,7 @@ def delete_group(request, pk):
     get_article.delete()
 
     return redirect('app:edit_groups')
+
 
 # edit learn subjects
 
@@ -684,7 +690,6 @@ def delete_faculty(request, pk):
     return redirect('app:edit_faculty')
 
 
-
 # edit user page
 @login_required
 def edit_users(request):
@@ -717,6 +722,7 @@ def handle_uploaded_file(f):
     with open(f'media/profile_pics/f.name', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
 
 @login_required
 def update_user(request, pk):
@@ -887,8 +893,10 @@ def update_object(request, obj, pk):
 
     return render(request, 'editing_page.html', context)
 
+
 def get_name(grade, model):
     return str(model.objects.get(pk=grade.object_id))
+
 
 def get_top_10(model):
     content_type = ContentType.objects.get_for_model(model)
@@ -901,6 +909,7 @@ def get_top_10(model):
         pks.append(note.object_id)
         i += 1
     return data, pks
+
 
 def get_leaderboards(request):
     cadets, pks = get_top_10(Cadet)
@@ -941,6 +950,7 @@ def get_user_data(request, pk):
 from django.http import HttpResponse
 from urllib.parse import quote
 
+
 def get_grade_data(student, category_pk, start_date, end_date):
     if category_pk == 'all':
         categories = Category.objects.all()
@@ -960,6 +970,8 @@ def get_grade_data(student, category_pk, start_date, end_date):
         result[cat] = excercise_dict
 
     return result
+
+
 @login_required
 def report(request):
     if request.method == 'POST':
@@ -987,6 +999,4 @@ def report(request):
     else:
         form = FilterFormLoadFile()
 
-
     return render(request, 'report.html', {'user_authenticated': request.user.is_authenticated, 'form': form})
-
